@@ -141,6 +141,22 @@ python scripts/double_submit.py   # 8 identical requests with one key -> one ord
 python scripts/attacks.py         # tampered token -> 401, alg=none -> 401, Bob vs Alice's order -> 404
 ```
 
+## Running the tests
+
+```powershell
+python -m pytest -q
+```
+
+| File | What it tests | Needs |
+|---|---|---|
+| `tests/test_domain.py` | every business rule in `domain.py` on plain objects | nothing |
+| `tests/test_service.py` | use cases on the real database: order, idempotent replay, key reuse, ownership, cancel | PostgreSQL running |
+| `tests/test_api.py` | the HTTP layer with FastAPI's TestClient: 401, 403, 400, the error shape | nothing (requests are refused before the database) |
+
+`test_service.py` resets the database to the demo data before each test, so it
+erases any orders you placed by hand. A sample run is in `test_output.txt`.
+The concurrency itself is tested by `scripts/race.py` (see above).
+
 ## Error model
 
 Every error has the same shape:
