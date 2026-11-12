@@ -1,35 +1,35 @@
 Schemathesis v4.33.2
 ━━━━━━━━━━━━━━━━━━━━
 
- ✅  Loaded specification from http://127.0.0.1:8000/openapi.json (in 0.45s)
+ ✅  Loaded specification from http://127.0.0.1:8000/openapi.json (in 0.55s)
 
      Base URL:         http://127.0.0.1:8000/
      Specification:    Open API 3.1.0
-     Operations:       9 selected / 9 total
+     Operations:       10 selected / 10 total
 
  ✅  API capabilities:
 
      Supports NULL byte in headers:                            ✘
      Accepts backslash and control characters in URL paths:    ✓
 
- ✅  Examples (in 0.36s)
+ ✅  Examples (in 0.58s)
 
-     ✅ 2 passed  ⏭  7 skipped
+     ✅  3 passed  ⏭   7 skipped
 
- ✅  Coverage (in 0.80s)
+ ✅  Coverage (in 1.79s)
 
-     ✅ 9 passed
+     ✅ 10 passed
 
- ✅  Fuzzing (in 2.26s)
+ ✅  Fuzzing (in 11.44s)
 
-     ✅ 9 passed
+     ✅ 10 passed
 
- ✅  Stateful (in 2.08s)
+ ✅  Stateful (in 2.83s)
 
-     Scenarios:    61
+     Scenarios:    56
      API Links:    5 covered / 7 selected / 7 total (7 inferred)
 
-     ✅ 61 passed
+     ✅ 56 passed
 
 =================================== WARNINGS ===================================
 
@@ -51,8 +51,8 @@ Schema validation mismatch: 1 operation mostly rejected generated data due to va
 =================================== SUMMARY ====================================
 
 API Operations:
-  Selected: 9/9
-  Tested: 9
+  Selected: 10/10
+  Tested: 10
 
 Test Phases:
   ✅ Examples
@@ -65,8 +65,8 @@ Warnings:
   ⚠️ Schema validation mismatch: 1 operation mostly rejected generated data
 
 Test cases:
-  727 generated, 727 passed
+  816 generated, 816 passed
 
 Seed: 387
 
-============================= 2 warnings in 5.69s ==============================
+============================= 2 warnings in 16.86s =============================
