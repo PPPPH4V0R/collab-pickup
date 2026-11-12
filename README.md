@@ -121,6 +121,11 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000
 - Interactive contract: http://127.0.0.1:8000/docs
 - Use `127.0.0.1`, not `localhost`: on Windows `localhost` tries IPv6 first and adds about 2 s to each request.
 
+**One-click start (after the one-time setup in steps 1–3):** double-click
+`start.bat`. It starts the database if needed, applies new migrations, asks
+whether to reset the demo data (No after 5 seconds), opens the test page and
+runs the service; Ctrl+C stops the service. `stop.bat` stops the database.
+
 To refresh the contract file after changing the API: `python scripts/export_openapi.py`.
 `tests/test_contract.py` fails until you do, so the committed contract never
 falls behind the code.
