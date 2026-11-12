@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))   # import app/ 
 
 from sqlalchemy import text
 from app.config import settings
-from app.repository import Repository, make_engine
+from app.postgres_repository import PostgresRepository, make_engine
 from app.service import OrderService
 import seed
 
@@ -24,7 +24,7 @@ CUSTOMERS = 100
 DEMO_DELAY = 0.2       # seconds between "check stock" and "write stock back"
 
 engine = make_engine(settings.database_url)
-service = OrderService(Repository(engine))
+service = OrderService(PostgresRepository(engine))
 
 
 def order_lines(i):

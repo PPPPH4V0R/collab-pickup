@@ -10,10 +10,10 @@ from app import api
 from app.auth import AuthError
 from app.config import settings
 from app.domain import DomainError
-from app.repository import Repository, make_engine
+from app.postgres_repository import PostgresRepository, make_engine
 from app.service import OrderService, error_body
 
-repo = Repository(make_engine(settings.database_url))
+repo = PostgresRepository(make_engine(settings.database_url))   # the one place that picks the storage
 api.service = OrderService(repo)
 
 app = FastAPI(

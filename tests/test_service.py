@@ -6,7 +6,7 @@ import pytest
 from sqlalchemy import text
 from app import domain
 from app.config import settings
-from app.repository import Repository, make_engine
+from app.postgres_repository import PostgresRepository, make_engine
 from app.service import OrderService
 import seed
 
@@ -17,7 +17,7 @@ HERO_SET = [{"itemId": "combo-hero-set", "qty": 1}]
 @pytest.fixture
 def service():
     seed.reset(engine)
-    return OrderService(Repository(engine))
+    return OrderService(PostgresRepository(engine))
 
 
 def remaining(batch_id):
