@@ -1,9 +1,10 @@
 # Wiring: build the layers, create the FastAPI app, turn every error into
 # the one error shape of the contract, and add the health checks.
 # Run: uvicorn app.main:app --host 127.0.0.1 --port 8000
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from starlette.exceptions import HTTPException
 from app import api
 from app.auth import AuthError
@@ -69,3 +70,13 @@ def readiness():
     except Exception:
         return JSONResponse({"status": "db_unreachable"}, status_code=503)
     return {"status": "ready"}
+
+
+# ---------- test page (customer and staff) ----------
+
+STATIC = Path(__file__).resolve().parent.parent / "static"
+
+
+@app.get("/", include_in_schema=False)
+def test_page():
+    return FileResponse(STATIC / "index.html")
