@@ -1,44 +1,46 @@
 Schemathesis v4.33.2
 ━━━━━━━━━━━━━━━━━━━━
 
- ✅  Loaded specification from http://127.0.0.1:8000/openapi.json (in 0.55s)
+ ✅  Loaded specification from http://127.0.0.1:8000/openapi.json (in 0.48s)
 
      Base URL:         http://127.0.0.1:8000/
      Specification:    Open API 3.1.0
-     Operations:       10 selected / 10 total
+     Operations:       12 selected / 12 total
 
  ✅  API capabilities:
 
      Supports NULL byte in headers:                            ✘
      Accepts backslash and control characters in URL paths:    ✓
 
- ✅  Examples (in 0.58s)
+ ✅  Examples (in 0.56s)
 
-     ✅  3 passed  ⏭   7 skipped
+     ✅  4 passed  ⏭   8 skipped
 
- ✅  Coverage (in 1.79s)
+ ✅  Coverage (in 2.47s)
 
-     ✅ 10 passed
+     ✅ 12 passed
 
- ✅  Fuzzing (in 11.44s)
+ ✅  Fuzzing (in 11.68s)
 
-     ✅ 10 passed
+     ✅ 12 passed
 
- ✅  Stateful (in 2.83s)
+ ✅  Stateful (in 2.97s)
 
-     Scenarios:    56
-     API Links:    5 covered / 7 selected / 7 total (7 inferred)
+     Scenarios:    63
+     API Links:    6 covered / 12 selected / 12 total (12 inferred)
 
-     ✅ 56 passed
+     ✅ 63 passed
 
 =================================== WARNINGS ===================================
 
-Authentication failed: 2 operations returned only 401/403 responses
+Authentication failed: 4 operations returned only 401/403 responses
 
 401 Unauthorized (1 operation):
   - POST /auth/login
-403 Forbidden (1 operation):
+403 Forbidden (3 operations):
+  - POST /items
   - POST /items/{item_id}/batches
+  - POST /items/{item_id}/bonus-gifts
 
 💡 Ensure valid authentication credentials are set via `--auth` or `-H`
 
@@ -51,8 +53,8 @@ Schema validation mismatch: 1 operation mostly rejected generated data due to va
 =================================== SUMMARY ====================================
 
 API Operations:
-  Selected: 10/10
-  Tested: 10
+  Selected: 12/12
+  Tested: 12
 
 Test Phases:
   ✅ Examples
@@ -61,12 +63,12 @@ Test Phases:
   ✅ Stateful
 
 Warnings:
-  ⚠️ Authentication failed: 2 operations returned only 401/403 responses
+  ⚠️ Authentication failed: 4 operations returned only 401/403 responses
   ⚠️ Schema validation mismatch: 1 operation mostly rejected generated data
 
 Test cases:
-  816 generated, 816 passed
+  1081 generated, 1081 passed
 
 Seed: 387
 
-============================= 2 warnings in 16.86s =============================
+============================= 2 warnings in 17.89s =============================
