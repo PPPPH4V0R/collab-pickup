@@ -4,7 +4,7 @@
 # Run from the project root: python -m pytest -q tests/test_service_memory.py
 from datetime import datetime, timedelta, timezone
 import pytest
-from app import domain
+from app import auth, domain
 from app.domain import Batch, BonusStock, Item
 from app.memory_repository import MemoryRepository
 from app.service import OrderService
@@ -88,6 +88,20 @@ def test_sold_out_order_changes_nothing(service):
     assert out.code == "SOLD_OUT"
     assert service.list_orders("u-alice")["orders"] == []
     assert stock(service) == (10, 10, 3)
+
+
+def test_registered_user_is_a_customer_who_can_log_in(service):
+    service.register("carol", "long-enough")
+    token = service.login("carol", "long-enough")["accessToken"]
+    assert auth.verify(token)["role"] == "customer"
+
+
+def test_registering_a_taken_username_is_refused(service):
+    service.register("carol", "long-enough")
+    with pytest.raises(domain.UsernameTaken):
+        service.register("carol", "another-password")
+    with pytest.raises(auth.AuthError):                  # the first password still holds
+        service.login("carol", "another-password")
 
 
 def test_failed_transaction_leaves_no_trace(service):

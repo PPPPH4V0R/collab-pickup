@@ -57,6 +57,20 @@ class BatchNotAllowed(DomainError):
     message = "Release batches can only be added to limited single items."
 
 
+class UsernameTaken(DomainError):
+    code = "USERNAME_TAKEN"
+    message = "This username is already taken."
+
+
+# ---------- accounts ----------
+
+def new_customer(user_id, username, password_hash):
+    """Anyone may sign up, but only as a customer: staff accounts are
+    created by the shop, never through registration."""
+    return {"id": user_id, "username": username,
+            "password_hash": password_hash, "role": "customer"}
+
+
 # ---------- the objects ----------
 
 class Item:

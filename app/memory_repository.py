@@ -52,6 +52,12 @@ class MemoryUnitOfWork(UnitOfWork):
     def find_user(self, username):
         return copy.deepcopy(self.data["users"].get(username))
 
+    def add_user(self, user):
+        if user["username"] in self.data["users"]:
+            return False
+        self.data["users"][user["username"]] = dict(user)
+        return True
+
     # ---------- menu and stock ----------
 
     def load_items(self):

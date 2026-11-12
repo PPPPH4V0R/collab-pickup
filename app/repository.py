@@ -49,6 +49,11 @@ class UnitOfWork(ABC):
     def find_user(self, username):
         """{"id", "username", "password_hash", "role"} or None."""
 
+    @abstractmethod
+    def add_user(self, user):
+        """Insert the user; returns False (and inserts nothing) if the
+        username is already taken, also by a concurrent transaction."""
+
     # ---------- menu and stock ----------
 
     @abstractmethod

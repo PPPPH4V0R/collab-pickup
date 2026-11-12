@@ -1,7 +1,7 @@
 # Request and response shapes of the contract. FastAPI turns these
 # Pydantic models into the JSON Schemas of openapi.json, and rejects a
 # request that does not match them before any of our code runs.
-from pydantic import AwareDatetime, BaseModel, Field
+from pydantic import AwareDatetime, BaseModel, Field, field_validator
 
 # Item ids, order ids and usernames are short slugs. Saying so in the
 # contract also rejects control characters such as NUL (which a PostgreSQL
@@ -26,6 +26,20 @@ class ErrorResponse(BaseModel):
 class LoginRequest(BaseModel):
     username: str = Field(pattern=ID_PATTERN, examples=["alice"])
     password: str
+
+
+class RegisterRequest(BaseModel):
+    """There is no role field: registration always creates a customer."""
+    username: str = Field(pattern=ID_PATTERN, examples=["carol"])
+    password: str = Field(min_length=8, max_length=72)
+
+    @field_validator("password")
+    @classmethod
+    def fits_bcrypt(cls, password):
+        # bcrypt only accepts 72 BYTES; a non-ASCII character takes several.
+        if len(password.encode()) > 72:
+            raise ValueError("must be at most 72 bytes in UTF-8")
+        return password
 
 
 class TokenResponse(BaseModel):

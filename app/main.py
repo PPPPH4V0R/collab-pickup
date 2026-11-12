@@ -35,6 +35,7 @@ Every error has the shape `{"error": {"code", "message", "details"}}`.
 | `HTTP_ERROR` | 404/405 | Unknown URL or wrong method | No | Check the URL and method |
 | `SOLD_OUT` | 409 | Not enough units on sale now | No, not with the same key (it replays SOLD_OUT) | Order later with a NEW Idempotency-Key, e.g. when a batch opens |
 | `ORDER_NOT_CANCELLABLE` | 409 | The order is past the point where it can be cancelled | No | Nothing to do |
+| `USERNAME_TAKEN` | 409 | Someone already registered this username | No | Register with another username |
 | `PER_ORDER_LIMIT` | 422 | More units of an item than one order may take | No | Lower the quantity and use a NEW key |
 | `UNKNOWN_ITEM` | 422 | An order line names an item not on the menu | No | Fix the line and use a NEW key |
 | `IDEMPOTENCY_KEY_REUSED` | 422 | This key was already used with a different request | No | Use a NEW key for a new request |

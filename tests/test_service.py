@@ -2,6 +2,7 @@
 # (DATABASE_URL from .env). Every test starts from the demo data, so these
 # tests ERASE whatever is in that database.
 # Run from the project root: python -m pytest -q tests/test_service.py
+from concurrent.futures import ThreadPoolExecutor
 import pytest
 from sqlalchemy import text
 from app import domain
@@ -77,6 +78,23 @@ def test_cancel_returns_units_to_their_batches_and_the_gift(service):
     out = service.place_order("u-alice", "k1", HERO_SET)
     service.cancel_order("u-alice", out.value["orderId"])
     assert (remaining("b-burger-1"), remaining("b-soda-1"), gifts_left()) == (10, 10, 3)
+
+
+def test_concurrent_sign_ups_with_one_username_create_one_account(service):
+    # 8 threads register "carol" at the same moment: the UNIQUE username with
+    # ON CONFLICT DO NOTHING lets exactly one win; the others get
+    # UsernameTaken (409), never a database error (500).
+    def sign_up(n):
+        try:
+            service.register("carol", f"password-{n}")
+            return "created"
+        except domain.UsernameTaken:
+            return "taken"
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        results = list(pool.map(sign_up, range(8)))
+    assert sorted(results) == ["created"] + ["taken"] * 7
+    with engine.connect() as conn:
+        assert conn.execute(text("SELECT COUNT(*) FROM users WHERE username = 'carol'")).scalar() == 1
 
 
 def test_sold_out_order_changes_nothing(service):

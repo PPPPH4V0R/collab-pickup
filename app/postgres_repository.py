@@ -55,6 +55,15 @@ class PostgresUnitOfWork(UnitOfWork):
         return self._run("SELECT id, username, password_hash, role FROM users"
                          " WHERE username = :u", {"u": username}).mappings().first()
 
+    def add_user(self, user):
+        # Same idea as the idempotency record: the UNIQUE constraint on
+        # username decides. If a concurrent sign-up inserted the same name,
+        # this INSERT waits for it to end, then skips (0 rows) -- no 500.
+        inserted = self._run("INSERT INTO users (id, username, password_hash, role)"
+                             " VALUES (:id, :username, :password_hash, :role)"
+                             " ON CONFLICT (username) DO NOTHING", user).rowcount
+        return inserted == 1
+
     # ---------- menu ----------
 
     def load_items(self):

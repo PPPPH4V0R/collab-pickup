@@ -20,6 +20,7 @@ STATUS = {
     "ITEM_NOT_FOUND": 404,
     "SOLD_OUT": 409,
     "ORDER_NOT_CANCELLABLE": 409,
+    "USERNAME_TAKEN": 409,
     "PER_ORDER_LIMIT": 422,
     "UNKNOWN_ITEM": 422,
     "IDEMPOTENCY_KEY_REUSED": 422,
@@ -46,6 +47,14 @@ def errors(*statuses):
              tags=["auth"])
 def login(body: schemas.LoginRequest):
     return service.login(body.username, body.password)
+
+
+@router.post("/auth/register", status_code=201, response_model=schemas.TokenResponse,
+             responses=errors(400, 409), tags=["auth"])
+def register(body: schemas.RegisterRequest):
+    """Create a customer account and log in. Staff accounts cannot be
+    created here; any 'role' sent in the body is ignored."""
+    return service.register(body.username, body.password)
 
 
 @router.get("/menu", response_model=schemas.MenuResponse, tags=["menu"])

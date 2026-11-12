@@ -32,7 +32,7 @@ class OrderService:
     def __init__(self, repo):
         self.repo = repo
 
-    # ---------- login ----------
+    # ---------- accounts ----------
 
     def login(self, username, password):
         with self.repo.unit_of_work() as uow:
@@ -40,6 +40,20 @@ class OrderService:
         if user is None or not auth.check_password(password, user["password_hash"]):
             # Same answer for "no such user" and "wrong password".
             raise auth.AuthError("INVALID_CREDENTIALS", "Wrong username or password.")
+        return self._token(user)
+
+    def register(self, username, password):
+        """Sign up as a customer and get a token at once (no separate login)."""
+        # Hash before the transaction: bcrypt is slow on purpose, and we
+        # should not hold a database connection while it runs.
+        user = domain.new_customer(self._new_user_id(), username, auth.hash_password(password))
+        with self.repo.unit_of_work() as uow:
+            if not uow.add_user(user):
+                # The unique username decides between two concurrent sign-ups.
+                raise domain.UsernameTaken(username=username)
+        return self._token(user)
+
+    def _token(self, user):
         return {"accessToken": auth.issue(user["id"], user["role"]),
                 "tokenType": "Bearer", "expiresIn": auth.TOKEN_TTL_SECONDS}
 
@@ -169,6 +183,9 @@ class OrderService:
 
     def _new_order_id(self):
         return f"ord_{secrets.token_hex(8)}"      # random, so ids cannot be guessed
+
+    def _new_user_id(self):
+        return f"u-{secrets.token_hex(6)}"
 
     def _new_batch_id(self):
         return f"b-{secrets.token_hex(4)}"
