@@ -36,6 +36,10 @@ def hash_password(password):
 
 
 def check_password(password, password_hash):
+    # bcrypt only accepts up to 72 bytes and raises on longer input; no
+    # stored password is that long, so a longer one is simply wrong.
+    if len(password.encode()) > 72:
+        return False
     return bcrypt.checkpw(password.encode(), password_hash.encode())
 
 
