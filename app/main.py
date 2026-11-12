@@ -105,7 +105,7 @@ def readiness():
 # Plain HTML clients of the API; not part of the contract.
 
 STATIC = Path(__file__).resolve().parent.parent / "static"
-app.mount("/static", StaticFiles(directory=STATIC), name="static")   # app.js
+app.mount("/static", StaticFiles(directory=STATIC), name="static")   # style.css and the pages' JS
 
 
 @app.get("/", include_in_schema=False)

@@ -2,59 +2,65 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Collab Pickup - log in</title>
-<script src="/static/app.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Collab Pickup · Log in</title>
+<link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<h1>Collab Pickup</h1>
-<p id="note"></p>
+<header class="topbar">
+  <a class="brand" href="/login">Collab Pickup<span>limited collab items for pickup</span></a>
+</header>
 
-<h2>Log in</h2>
-<form onsubmit="login(event)">
-  <p>Username <input id="loginUser" required></p>
-  <p>Password <input id="loginPassword" type="password" required></p>
-  <button>Log in</button>
-</form>
+<main class="auth-wrap">
+  <div class="card auth-card">
+    <h1>Welcome</h1>
+    <p class="muted small">Order limited collab items and combos for pickup.</p>
 
-<h2>Register (customers only)</h2>
-<form onsubmit="register(event)">
-  <p>Username <input id="newUser" required> (letters, digits, _ and -)</p>
-  <p>Password <input id="newPassword" type="password" minlength="8" required> (at least 8 characters)</p>
-  <button>Register</button>
-</form>
+    <div class="tabs" role="tablist">
+      <button type="button" id="tab-login" class="active">Log in</button>
+      <button type="button" id="tab-signup">Sign up</button>
+    </div>
 
-<h2>Last response</h2>
-<pre id="out">(nothing yet)</pre>
+    <div id="note" class="hidden"></div>
+    <div id="alert" class="hidden"></div>
 
-<script>
-sessionStorage.clear();        // opening the login page logs this tab out
-const next = new URLSearchParams(location.search).get("next");
-if (next) {
-  document.getElementById("note").textContent = `Log in to open ${next}.`;
-}
+    <form id="login-form" novalidate>
+      <div class="field">
+        <label for="login-username">Username</label>
+        <input id="login-username" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="login-password">Password</label>
+        <input id="login-password" type="password" autocomplete="current-password" required>
+      </div>
+      <button class="block" id="login-submit">Log in</button>
+    </form>
 
-// After login or registration, the role in the token decides the page.
-function enter(tokenResponse, username) {
-  sessionStorage.setItem("token", tokenResponse.accessToken);
-  sessionStorage.setItem("username", username);
-  location.href = claims().role === "staff" ? "/staff" : "/customer";
-}
+    <form id="signup-form" class="hidden" novalidate>
+      <div class="field">
+        <label for="signup-username">Username</label>
+        <input id="signup-username" autocomplete="username" required>
+        <div class="hint" id="signup-username-hint">Letters, digits, _ and -, up to 64 characters.</div>
+      </div>
+      <div class="field">
+        <label for="signup-password">Password</label>
+        <input id="signup-password" type="password" autocomplete="new-password" required>
+        <div class="hint" id="signup-password-hint">At least 8 characters.</div>
+      </div>
+      <div class="field">
+        <label for="signup-confirm">Confirm password</label>
+        <input id="signup-confirm" type="password" autocomplete="new-password" required>
+        <div class="hint" id="signup-confirm-hint"></div>
+      </div>
+      <button class="block" id="signup-submit">Create customer account</button>
+      <p class="muted small">New accounts are customers. Staff accounts are created by the shop.</p>
+    </form>
 
-async function login(event) {
-  event.preventDefault();
-  const username = document.getElementById("loginUser").value;
-  const r = await api("POST", "/auth/login",
-                      { username, password: document.getElementById("loginPassword").value });
-  if (r.ok) enter(r.data, username);
-}
+    <p class="muted small">Demo accounts: <span class="mono">alice</span>, <span class="mono">bob</span> (customers), <span class="mono">staff</span> (staff).</p>
+  </div>
+</main>
 
-async function register(event) {
-  event.preventDefault();
-  const username = document.getElementById("newUser").value;
-  const r = await api("POST", "/auth/register",
-                      { username, password: document.getElementById("newPassword").value });
-  if (r.ok) enter(r.data, username);
-}
-</script>
+<script src="/static/api.js"></script>
+<script src="/static/login.js"></script>
 </body>
 </html>

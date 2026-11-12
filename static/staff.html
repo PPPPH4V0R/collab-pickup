@@ -2,58 +2,68 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Collab Pickup - staff</title>
-<script src="/static/app.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Collab Pickup · Staff</title>
+<link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<h1>Collab Pickup - staff</h1>
-<p><span id="who"></span> <button onclick="logout()">Log out</button></p>
+<header class="topbar">
+  <a class="brand" href="/staff">Collab Pickup<span>staff</span></a>
+  <div class="nav-user">
+    <span><strong id="who-name"></strong> <span class="pill brand who-role" id="who-role"></span></span>
+    <button class="secondary small" id="logout">Log out</button>
+  </div>
+</header>
 
-<h2>Menu</h2>
-<table border="1">
-  <thead><tr><th>Item</th><th>Id</th><th>Available</th><th>Bonus gifts left</th></tr></thead>
-  <tbody id="menu"></tbody>
-</table>
-<p><button onclick="loadMenu()">Refresh</button></p>
+<main class="page">
+  <div id="result" class="hidden"></div>
 
-<h2>Add a release batch</h2>
-<form onsubmit="addBatch(event)">
-  <p>Item <select id="item"></select></p>
-  <p>Release at <input id="releaseAt" type="datetime-local"> (empty = now)</p>
-  <p>Quantity <input id="quantity" type="number" min="1" value="5" required></p>
-  <button>Add batch</button>
-</form>
+  <div class="two-col">
+    <section class="card">
+      <div class="section-head">
+        <h2>Inventory</h2>
+        <button class="secondary small" id="refresh">Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Item</th><th>Type</th><th class="num">Price</th><th class="num">On sale now</th><th class="num">Gifts left</th></tr>
+          </thead>
+          <tbody id="inventory"></tbody>
+        </table>
+      </div>
+      <p class="muted small">"On sale now" counts batches already released. A combo shows how many its scarcest item allows.</p>
+    </section>
 
-<h2>Last response</h2>
-<pre id="out">(nothing yet)</pre>
+    <section class="card">
+      <div class="section-head"><h2>Add a release batch</h2></div>
+      <form id="batch-form">
+        <div class="field">
+          <label for="item">Item</label>
+          <select id="item" required></select>
+          <div class="hint">Only limited single items are sold from batches.</div>
+        </div>
+        <div class="field">
+          <label for="release-at">Release at</label>
+          <input id="release-at" type="datetime-local" required>
+          <div class="hint">Your local time. Now or earlier = on sale at once.</div>
+        </div>
+        <div class="field">
+          <label for="quantity">Quantity</label>
+          <input id="quantity" type="number" min="1" max="1000" value="5" required>
+        </div>
+        <button class="block" id="add">Add batch</button>
+      </form>
+    </section>
+  </div>
 
-<script>
-async function loadMenu() {
-  const r = await api("GET", "/menu", null, null, false);
-  document.getElementById("menu").innerHTML = r.data.items.map(i => `<tr>
-      <td>${i.name}</td>
-      <td>${i.id}</td>
-      <td>${i.available === null ? "unlimited" : i.available}</td>
-      <td>${i.kind === "combo" ? i.bonusRemaining : "-"}</td>
-    </tr>`).join("");
-  // Batches exist only for limited single items.
-  document.getElementById("item").innerHTML = r.data.items
-    .filter(i => i.kind === "single" && i.available !== null)
-    .map(i => `<option value="${i.id}">${i.name}</option>`).join("");
-}
+  <details class="card api-panel">
+    <summary>API response <span class="pill" id="api-status">none yet</span></summary>
+    <pre id="api-out">Requests you make on this page show up here.</pre>
+  </details>
+</main>
 
-async function addBatch(event) {
-  event.preventDefault();
-  const local = document.getElementById("releaseAt").value;    // local time, no zone
-  await api("POST", `/items/${document.getElementById("item").value}/batches`, {
-    releaseAt: (local ? new Date(local) : new Date()).toISOString(),   // sent in UTC
-    quantity: Number(document.getElementById("quantity").value) });
-  await loadMenu();
-}
-
-if (requireRole("staff")) {
-  loadMenu();
-}
-</script>
+<script src="/static/api.js"></script>
+<script src="/static/staff.js"></script>
 </body>
 </html>
