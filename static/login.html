@@ -3,35 +3,31 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Collab Pickup · Log in</title>
+<title>Collab Pickup · Sign in</title>
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="/login">Collab Pickup<span>limited collab items for pickup</span></a>
+  <a class="brand" href="/customer">Collab Pickup</a>
 </header>
 
 <main class="auth-wrap">
   <div class="card auth-card">
-    <h1>Welcome</h1>
-    <p class="muted small">Order limited collab items and combos for pickup.</p>
-
     <div class="tabs" role="tablist">
       <button type="button" id="tab-login" class="active">Log in</button>
       <button type="button" id="tab-signup">Sign up</button>
     </div>
 
-    <div id="note" class="hidden"></div>
     <div id="alert" class="hidden"></div>
 
     <form id="login-form" novalidate>
       <div class="field">
         <label for="login-username">Username</label>
-        <input id="login-username" autocomplete="username" required>
+        <input id="login-username" autocomplete="username">
       </div>
       <div class="field">
         <label for="login-password">Password</label>
-        <input id="login-password" type="password" autocomplete="current-password" required>
+        <input id="login-password" type="password" autocomplete="current-password">
       </div>
       <button class="block" id="login-submit">Log in</button>
     </form>
@@ -39,24 +35,21 @@
     <form id="signup-form" class="hidden" novalidate>
       <div class="field">
         <label for="signup-username">Username</label>
-        <input id="signup-username" autocomplete="username" required>
-        <div class="hint" id="signup-username-hint">Letters, digits, _ and -, up to 64 characters.</div>
+        <input id="signup-username" autocomplete="username">
+        <div class="hint bad" id="signup-username-hint"></div>
       </div>
       <div class="field">
         <label for="signup-password">Password</label>
-        <input id="signup-password" type="password" autocomplete="new-password" required>
-        <div class="hint" id="signup-password-hint">At least 8 characters.</div>
+        <input id="signup-password" type="password" autocomplete="new-password">
+        <div class="hint bad" id="signup-password-hint"></div>
       </div>
       <div class="field">
         <label for="signup-confirm">Confirm password</label>
-        <input id="signup-confirm" type="password" autocomplete="new-password" required>
-        <div class="hint" id="signup-confirm-hint"></div>
+        <input id="signup-confirm" type="password" autocomplete="new-password">
+        <div class="hint bad" id="signup-confirm-hint"></div>
       </div>
-      <button class="block" id="signup-submit">Create customer account</button>
-      <p class="muted small">New accounts are customers. Staff accounts are created by the shop.</p>
+      <button class="block" id="signup-submit">Create account</button>
     </form>
-
-    <p class="muted small">Demo accounts: <span class="mono">alice</span>, <span class="mono">bob</span> (customers), <span class="mono">staff</span> (staff).</p>
   </div>
 </main>
 

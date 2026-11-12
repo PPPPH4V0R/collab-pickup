@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Collab Pickup Staff · Sign in</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/staff">Collab Pickup<span>Staff</span></a>
+</header>
+
+<main class="auth-wrap">
+  <div class="card auth-card">
+    <h1>Staff sign in</h1>
+
+    <div id="alert" class="hidden"></div>
+
+    <form id="login-form" class="form" novalidate>
+      <div class="field">
+        <label for="username">Username</label>
+        <input id="username" autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" type="password" autocomplete="current-password">
+      </div>
+      <button class="block" id="submit">Sign in</button>
+    </form>
+  </div>
+</main>
+
+<script src="/static/api.js"></script>
+<script src="/static/staff-login.js"></script>
+</body>
+</html>

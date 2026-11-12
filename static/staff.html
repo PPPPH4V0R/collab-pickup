@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Collab Pickup · Staff</title>
+<title>Collab Pickup Staff</title>
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="/staff">Collab Pickup<span>staff</span></a>
+  <a class="brand" href="/staff">Collab Pickup<span>Staff</span></a>
   <div class="nav-user">
-    <span><strong id="who-name"></strong> <span class="pill brand who-role" id="who-role"></span></span>
+    <strong id="who-name"></strong>
     <button class="secondary small" id="logout">Log out</button>
   </div>
 </header>
@@ -28,12 +28,11 @@
         <table>
           <thead>
             <tr><th>Item</th><th>Type</th><th class="num">Price</th><th class="num">Limit</th>
-                <th class="num">On sale now</th><th class="num">Gifts left</th></tr>
+                <th class="num">On sale</th><th class="num">Gifts</th></tr>
           </thead>
           <tbody id="inventory"></tbody>
         </table>
       </div>
-      <p class="muted small">"On sale now" counts batches already released. A combo shows how many its scarcest item allows.</p>
     </section>
 
     <div class="stack">
@@ -43,12 +42,10 @@
           <div class="field">
             <label for="batch-item">Item</label>
             <select id="batch-item" required></select>
-            <div class="hint">Only limited single items are sold from batches.</div>
           </div>
           <div class="field">
             <label for="batch-release">Release at</label>
             <input id="batch-release" type="datetime-local" required>
-            <div class="hint">Your local time. Now or earlier = on sale at once.</div>
           </div>
           <div class="field">
             <label for="batch-quantity">Quantity</label>
@@ -66,7 +63,7 @@
             <select id="gifts-combo" required></select>
           </div>
           <div class="field">
-            <label for="gifts-quantity">Gifts to add</label>
+            <label for="gifts-quantity">Quantity</label>
             <input id="gifts-quantity" type="number" min="1" max="1000" value="5" required>
           </div>
           <button class="block">Add gifts</button>
@@ -81,23 +78,21 @@
       <form id="item-form" class="form">
         <div class="field">
           <label for="item-name">Name</label>
-          <input id="item-name" maxlength="80" required placeholder="Pink Lemonade">
+          <input id="item-name" maxlength="80" required>
         </div>
         <div class="field">
-          <label for="item-id">Id</label>
-          <input id="item-id" maxlength="64" required placeholder="drink-pink-lemonade">
-          <div class="hint">Filled in from the name; letters, digits, _ and -. Cannot be changed later.</div>
+          <label for="item-id">Item ID</label>
+          <input id="item-id" maxlength="64" required>
         </div>
         <div class="field">
           <label for="item-price">Price (CAD)</label>
-          <input id="item-price" inputmode="decimal" required placeholder="5.50">
+          <input id="item-price" inputmode="decimal" required>
         </div>
         <div class="field">
-          <label class="check"><input id="item-limited" type="checkbox" checked> Limited (sold from release batches)</label>
-          <div class="hint">A new limited item shows as <strong>Sold out</strong> until you add a batch.</div>
+          <label class="check"><input id="item-limited" type="checkbox" checked> Limited (sold in release batches)</label>
         </div>
         <div class="field">
-          <label for="item-limit">Max per order (optional)</label>
+          <label for="item-limit">Max per order</label>
           <input id="item-limit" type="number" min="1" max="50" placeholder="No limit">
         </div>
         <button class="block">Add item</button>
@@ -109,22 +104,20 @@
       <form id="combo-form" class="form">
         <div class="field">
           <label for="combo-name">Name</label>
-          <input id="combo-name" maxlength="80" required placeholder="Blue Duo (2 sodas)">
+          <input id="combo-name" maxlength="80" required>
         </div>
         <div class="field">
-          <label for="combo-id">Id</label>
-          <input id="combo-id" maxlength="64" required placeholder="combo-blue-duo">
-          <div class="hint">Filled in from the name; letters, digits, _ and -.</div>
+          <label for="combo-id">Item ID</label>
+          <input id="combo-id" maxlength="64" required>
         </div>
         <div class="field">
           <label for="combo-price">Price (CAD)</label>
-          <input id="combo-price" inputmode="decimal" required placeholder="9.50">
+          <input id="combo-price" inputmode="decimal" required>
         </div>
         <div class="field">
-          <label>Components</label>
+          <label>Items in the combo</label>
           <div id="components" class="components"></div>
-          <button type="button" class="secondary small" id="add-component">+ Add component</button>
-          <div class="hint">Existing single items only. The combo uses their stock and their per-order limits.</div>
+          <button type="button" class="secondary small" id="add-component">+ Add item</button>
         </div>
         <div class="field">
           <label for="combo-gifts">Bonus gifts</label>
@@ -134,11 +127,6 @@
       </form>
     </section>
   </div>
-
-  <details class="card api-panel">
-    <summary>API response <span class="pill" id="api-status">none yet</span></summary>
-    <pre id="api-out">Requests you make on this page show up here.</pre>
-  </details>
 </main>
 
 <script src="/static/api.js"></script>

@@ -297,21 +297,6 @@ label.check { font-weight: 500; }
 .tabs button:hover:not(:disabled) { background: rgba(255, 255, 255, 0.6); border: none; }
 .tabs button.active { background: var(--card); color: var(--text); box-shadow: var(--shadow); }
 
-/* ---------- API response panel ---------- */
-
-.api-panel { margin-top: 28px; }
-.api-panel summary { cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 10px; }
-.api-panel pre {
-  margin: 12px 0 0;
-  padding: 12px;
-  background: #1f2430;
-  color: #e6e9ef;
-  border-radius: 8px;
-  overflow-x: auto;
-  max-height: 360px;
-  font-size: 0.82rem;
-}
-
 /* ---------- narrow screens (phones) ---------- */
 
 @media (max-width: 1000px) {

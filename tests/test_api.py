@@ -146,5 +146,20 @@ def test_price_must_be_a_money_string():
     assert_error_shape(response, "VALIDATION_ERROR")
 
 
+# ---------- web pages (static files, not part of the contract) ----------
+
+def test_the_four_pages_are_served():
+    for path in ["/login", "/staff/login", "/customer", "/staff"]:
+        response = client.get(path)
+        assert response.status_code == 200, path
+        assert response.headers["content-type"].startswith("text/html")
+
+
+def test_home_redirects_to_the_customer_sign_in():
+    response = client.get("/", follow_redirects=False)
+    assert response.status_code == 307
+    assert response.headers["location"] == "/login"
+
+
 def test_liveness_needs_nothing():
     assert client.get("/healthz").json() == {"status": "alive"}

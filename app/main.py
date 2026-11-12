@@ -104,7 +104,7 @@ def readiness():
     return {"status": "ready"}
 
 
-# ---------- test pages: login/register, customer, staff ----------
+# ---------- web pages: customer site and staff site ----------
 # Plain HTML clients of the API; not part of the contract.
 
 STATIC = Path(__file__).resolve().parent.parent / "static"
@@ -129,3 +129,8 @@ def customer_page():
 @app.get("/staff", include_in_schema=False)
 def staff_page():
     return FileResponse(STATIC / "staff.html")
+
+
+@app.get("/staff/login", include_in_schema=False)
+def staff_login_page():
+    return FileResponse(STATIC / "staff-login.html")

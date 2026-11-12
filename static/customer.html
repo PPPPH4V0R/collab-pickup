@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Collab Pickup · Order</title>
+<title>Collab Pickup</title>
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="/customer">Collab Pickup<span>order for pickup</span></a>
+  <a class="brand" href="/customer">Collab Pickup</a>
   <div class="nav-user">
-    <span><strong id="who-name"></strong> <span class="pill brand who-role" id="who-role"></span></span>
+    <strong id="who-name"></strong>
     <button class="secondary small" id="logout">Log out</button>
   </div>
 </header>
@@ -20,38 +20,23 @@
 
   <div class="shop">
     <section>
-      <div class="section-head">
-        <h2>Menu</h2>
-        <span class="muted small">Live availability · combos share stock with their items</span>
-      </div>
+      <div class="section-head"><h2>Menu</h2></div>
       <div class="menu-grid" id="menu"></div>
     </section>
 
     <aside class="card sticky">
       <h2>Your order</h2>
       <ul class="cart-lines" id="cart-lines"></ul>
-      <div class="cart-total"><span>Estimated total</span><span id="cart-total">CAD 0.00</span></div>
-      <p class="muted small">The server's total on the receipt is final.</p>
+      <div class="cart-total"><span>Total</span><span id="cart-total">CAD 0.00</span></div>
       <div class="cart-actions">
         <button id="place">Place order</button>
-        <button class="secondary" id="resend" disabled
-                title="Sends the last order again with the same Idempotency-Key">Send again with the same key</button>
         <button class="secondary" id="clear">Clear</button>
       </div>
-      <p class="muted small" id="last-key"></p>
     </aside>
   </div>
 
-  <div class="section-head">
-    <h2>My orders</h2>
-    <span class="muted small">Pay within 15 minutes · cancel while waiting for payment</span>
-  </div>
+  <div class="section-head"><h2>My orders</h2></div>
   <div class="orders" id="orders"></div>
-
-  <details class="card api-panel">
-    <summary>API response <span class="pill" id="api-status">none yet</span></summary>
-    <pre id="api-out">Requests you make on this page show up here.</pre>
-  </details>
 </main>
 
 <script src="/static/api.js"></script>

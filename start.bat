@@ -3,7 +3,7 @@ rem One-click start for local runs on Windows: double-click this file.
 rem   1. starts the private PostgreSQL instance (port 5434) if it is not running
 rem   2. applies any new migrations
 rem   3. asks whether to reset the demo data (answers No after 5 seconds)
-rem   4. opens the customer page and the staff page (two browser tabs) and
+rem   4. opens the customer site and the staff site (two browser tabs) and
 rem      starts the service on http://127.0.0.1:8000
 rem Close this window or press Ctrl+C to stop the service.
 rem The database keeps running; stop.bat stops it.
@@ -32,11 +32,11 @@ if errorlevel 2 (
 )
 
 echo [4/4] Service
-echo   Customer page: http://127.0.0.1:8000/customer  (log in as alice or register)
-echo   Staff page:    http://127.0.0.1:8000/staff     (log in as staff)
+echo   Customer site: http://127.0.0.1:8000/customer
+echo   Staff site:    http://127.0.0.1:8000/staff
 echo   Contract:      http://127.0.0.1:8000/docs
 echo   Press Ctrl+C to stop.
-rem Open both pages a few seconds later, once the service is listening.
+rem Open both sites a few seconds later, once the service is listening.
 rem Each tab keeps its own login, so one can be a customer and the other staff.
 start "" /b cmd /c "timeout /t 3 /nobreak >nul & start http://127.0.0.1:8000/customer & start http://127.0.0.1:8000/staff"
 %PY% -m uvicorn app.main:app --host 127.0.0.1 --port 8000

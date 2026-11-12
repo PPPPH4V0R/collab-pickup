@@ -1,15 +1,10 @@
-// Login page: log in or sign up, then go to the page for your role.
+// Customer sign-in page: log in or sign up, then go to /customer.
+// Staff use their own page, /staff/login.
 
-sessionStorage.clear();        // opening the login page logs this tab out
+sessionStorage.clear();        // opening the sign-in page logs this tab out
 
 const alertBox = document.getElementById("alert");
 const USERNAME_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;   // same rule as the contract
-
-// "/login?next=/staff" tells the user why they are here.
-const next = new URLSearchParams(location.search).get("next");
-if (next) {
-  showAlert(document.getElementById("note"), "info", `Log in to open <strong>${esc(next)}</strong>`);
-}
 
 // ---------- the two tabs ----------
 
@@ -25,10 +20,15 @@ function showTab(name) {
 document.getElementById("tab-login").addEventListener("click", () => showTab("login"));
 document.getElementById("tab-signup").addEventListener("click", () => showTab("signup"));
 
-// After login or sign-up, the role in the token decides the page.
+// Only customers enter here; a staff account is sent to its own page and
+// its token is not kept.
 function enter(tokenResponse, username) {
+  if (decodeClaims(tokenResponse.accessToken).role !== "customer") {
+    showAlert(alertBox, "err", "This is a staff account. Please use the staff sign-in page.");
+    return;
+  }
   saveLogin(tokenResponse, username);
-  location.href = claims().role === "staff" ? "/staff" : "/customer";
+  location.href = "/customer";
 }
 
 // ---------- log in ----------
@@ -46,53 +46,36 @@ document.getElementById("login-form").addEventListener("submit", async event => 
   const r = await api("POST", "/auth/login", { body: { username, password } });
   button.disabled = false;
   if (r.ok) enter(r.data, username);
-  else showAlert(alertBox, "err", errorHtml(r.data));
+  else showAlert(alertBox, "err", errorText(r.data));
 });
 
-// ---------- sign up (with checks before anything is sent) ----------
+// ---------- sign up: problems are shown only when there are some ----------
 
 function signupProblems() {
   const username = document.getElementById("signup-username").value.trim();
   const password = document.getElementById("signup-password").value;
   const confirm = document.getElementById("signup-confirm").value;
   return {
-    username: username && !USERNAME_PATTERN.test(username)
-      ? "Only letters, digits, _ and -, up to 64 characters." : "",
-    password: password && password.length < 8 ? "At least 8 characters." : "",
-    confirm: confirm && confirm !== password ? "The passwords do not match." : "",
+    "signup-username-hint": !username ? "Enter a username."
+      : !USERNAME_PATTERN.test(username) ? "Use only letters, digits, _ and -." : "",
+    "signup-password-hint": password.length < 8 ? "Use at least 8 characters." : "",
+    "signup-confirm-hint": confirm !== password ? "The passwords do not match." : "",
   };
 }
-
-function showSignupHints() {
-  const p = signupProblems();
-  const hint = (id, text, normal) => {
-    const el = document.getElementById(id);
-    el.textContent = text || normal;
-    el.classList.toggle("bad", Boolean(text));
-  };
-  hint("signup-username-hint", p.username, "Letters, digits, _ and -, up to 64 characters.");
-  hint("signup-password-hint", p.password, "At least 8 characters.");
-  hint("signup-confirm-hint", p.confirm, "");
-}
-
-["signup-username", "signup-password", "signup-confirm"].forEach(id =>
-  document.getElementById(id).addEventListener("input", showSignupHints));
 
 document.getElementById("signup-form").addEventListener("submit", async event => {
   event.preventDefault();
+  hideAlert(alertBox);
+  const problems = signupProblems();
+  for (const [id, text] of Object.entries(problems)) document.getElementById(id).textContent = text;
+  if (Object.values(problems).some(Boolean)) return;
+
   const username = document.getElementById("signup-username").value.trim();
   const password = document.getElementById("signup-password").value;
-  const confirm = document.getElementById("signup-confirm").value;
-  showSignupHints();
-  const p = signupProblems();
-  if (!username || !password || !confirm || p.username || p.password || p.confirm) {
-    showAlert(alertBox, "err", "Please fix the fields marked in red.");
-    return;
-  }
   const button = document.getElementById("signup-submit");
   button.disabled = true;
   const r = await api("POST", "/auth/register", { body: { username, password } });
   button.disabled = false;
   if (r.ok) enter(r.data, username);
-  else showAlert(alertBox, "err", errorHtml(r.data));
+  else showAlert(alertBox, "err", errorText(r.data));
 });
