@@ -113,9 +113,8 @@ document.getElementById("place").addEventListener("click", async () => {
   if (r.ok) {
     const o = r.data;
     const gift = o.bonus.length === 0 ? "" : o.bonus.some(b => b.included)
-      ? " Your bonus gift is included." : " Bonus gifts have run out.";
-    showAlert(resultBox, "ok",
-      `Order placed: ${o.currency} ${o.total}.${gift} Please pay by ${formatTime(o.paymentDueBy)}`);
+      ? " Bonus gift included." : " Bonus gifts have run out.";
+    showAlert(resultBox, "ok", `Order placed: ${o.currency} ${o.total}.${gift}`);
     cart = {};
   } else {
     showAlert(resultBox, "err", orderErrorText(r.data));
@@ -132,10 +131,10 @@ function orderErrorText(data) {
   if (e.code === "SOLD_OUT") {
     return d.available === 0
       ? `${itemName(d.itemId)} is sold out right now.`
-      : `Only ${d.available} ${itemName(d.itemId)} left. Please lower the quantity.`;
+      : `Only ${d.available} ${itemName(d.itemId)} left.`;
   }
   if (e.code === "PER_ORDER_LIMIT") {
-    return `You can order at most ${d.limit} ${itemName(d.itemId)} per order, including combos.`;
+    return `At most ${d.limit} ${itemName(d.itemId)} per order.`;
   }
   return errorText(data);
 }

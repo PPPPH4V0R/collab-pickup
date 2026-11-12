@@ -155,6 +155,16 @@ def test_the_four_pages_are_served():
         assert response.headers["content-type"].startswith("text/html")
 
 
+def test_pages_and_their_files_are_never_cached():
+    for path in ["/login", "/staff/login", "/customer", "/staff",
+                 "/static/style.css", "/static/api.js", "/static/customer.js"]:
+        assert client.get(path).headers.get("cache-control") == "no-store", path
+
+
+def test_api_responses_are_not_marked_no_store():
+    assert "cache-control" not in client.get("/healthz").headers
+
+
 def test_home_redirects_to_the_customer_sign_in():
     response = client.get("/", follow_redirects=False)
     assert response.status_code == 307

@@ -85,15 +85,15 @@
           <input id="item-id" maxlength="64" required>
         </div>
         <div class="field">
-          <label for="item-price">Price (CAD)</label>
+          <label for="item-price">Price</label>
           <input id="item-price" inputmode="decimal" required>
         </div>
         <div class="field">
-          <label class="check"><input id="item-limited" type="checkbox" checked> Limited (sold in release batches)</label>
+          <label class="check"><input id="item-limited" type="checkbox" checked> Limited</label>
         </div>
         <div class="field">
-          <label for="item-limit">Max per order</label>
-          <input id="item-limit" type="number" min="1" max="50" placeholder="No limit">
+          <label for="item-limit">Order limit</label>
+          <input id="item-limit" type="number" min="1" max="50">
         </div>
         <button class="block">Add item</button>
       </form>
@@ -111,11 +111,11 @@
           <input id="combo-id" maxlength="64" required>
         </div>
         <div class="field">
-          <label for="combo-price">Price (CAD)</label>
+          <label for="combo-price">Price</label>
           <input id="combo-price" inputmode="decimal" required>
         </div>
         <div class="field">
-          <label>Items in the combo</label>
+          <label>Items</label>
           <div id="components" class="components"></div>
           <button type="button" class="secondary small" id="add-component">+ Add item</button>
         </div>

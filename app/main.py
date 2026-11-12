@@ -108,6 +108,18 @@ def readiness():
 # Plain HTML clients of the API; not part of the contract.
 
 STATIC = Path(__file__).resolve().parent.parent / "static"
+PAGES = {"/login", "/staff/login", "/customer", "/staff"}
+
+
+@app.middleware("http")
+async def no_store_for_pages(request, call_next):
+    """Browsers must not keep old copies of the pages and their CSS/JS, or a
+    restarted service can show yesterday's page. The API is not affected."""
+    response = await call_next(request)
+    path = request.url.path
+    if path in PAGES or path.startswith("/static/"):
+        response.headers["Cache-Control"] = "no-store"
+    return response
 app.mount("/static", StaticFiles(directory=STATIC), name="static")   # style.css and the pages' JS
 
 

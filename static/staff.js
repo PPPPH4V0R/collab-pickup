@@ -120,7 +120,7 @@ document.getElementById("item-form").addEventListener("submit", async event => {
     price: document.getElementById("item-price").value.trim(),
     limited: document.getElementById("item-limited").checked,
     perOrderLimit: limit ? Number(limit) : null,
-  }, i => `${i.name} added.` + (i.available === 0 ? " Add a release batch to put it on sale." : ""));
+  }, i => `${i.name} added.`);
   if (ok) {
     event.target.reset();
     delete document.getElementById("item-id").dataset.edited;
