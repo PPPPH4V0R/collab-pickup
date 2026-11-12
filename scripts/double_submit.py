@@ -18,6 +18,7 @@ import httpx
 from sqlalchemy import create_engine
 from app.config import settings
 import seed
+from seed import DEMO_PASSWORD
 
 API = os.environ.get("API_URL", "http://127.0.0.1:8000")
 CLICKS = 8
@@ -25,7 +26,7 @@ CLICKS = 8
 
 def login(username):
     r = httpx.post(f"{API}/auth/login",
-                   json={"username": username, "password": os.environ["DEMO_PASSWORD"]})
+                   json={"username": username, "password": DEMO_PASSWORD})
     return {"Authorization": f"Bearer {r.json()['accessToken']}"}
 
 

@@ -5,6 +5,7 @@ sessionStorage.clear();        // opening the sign-in page logs this tab out
 
 const alertBox = document.getElementById("alert");
 const USERNAME_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;   // same rule as the contract
+const WRONG_LOGIN = "Wrong username or password.";  // the server's INVALID_CREDENTIALS message
 
 // ---------- the two tabs ----------
 
@@ -20,11 +21,12 @@ function showTab(name) {
 document.getElementById("tab-login").addEventListener("click", () => showTab("login"));
 document.getElementById("tab-signup").addEventListener("click", () => showTab("signup"));
 
-// Only customers enter here; a staff account is sent to its own page and
-// its token is not kept.
+// Only customer accounts sign in here. A staff account gets the same answer
+// as a wrong password (so the page does not reveal that the account exists),
+// and its token is not kept.
 function enter(tokenResponse, username) {
   if (decodeClaims(tokenResponse.accessToken).role !== "customer") {
-    showAlert(alertBox, "err", "This is a staff account. Please use the staff sign-in page.");
+    showAlert(alertBox, "err", WRONG_LOGIN);
     return;
   }
   saveLogin(tokenResponse, username);

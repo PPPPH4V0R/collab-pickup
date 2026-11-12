@@ -23,6 +23,7 @@ from sqlalchemy import create_engine
 from app import auth
 from app.config import settings
 import seed
+from seed import DEMO_PASSWORD
 
 API = os.environ.get("API_URL", "http://127.0.0.1:8000")
 NEW_BATCH = {"releaseAt": "2026-11-13T09:00:00-05:00", "quantity": 100}
@@ -30,7 +31,7 @@ NEW_BATCH = {"releaseAt": "2026-11-13T09:00:00-05:00", "quantity": 100}
 
 def login(username):
     r = httpx.post(f"{API}/auth/login",
-                   json={"username": username, "password": os.environ["DEMO_PASSWORD"]})
+                   json={"username": username, "password": DEMO_PASSWORD})
     return r.json()["accessToken"]
 
 

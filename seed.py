@@ -1,13 +1,13 @@
 # Resets the database to the demo data. Every demo script calls reset()
 # first, so each run starts from the same state.
 # Run: python seed.py
-import os
 from sqlalchemy import create_engine, text
 from app.auth import hash_password
 from app.config import settings
 
-# Demo users all get the same password, read from the environment (.env).
-DEMO_PASSWORD = os.environ["DEMO_PASSWORD"]
+# The demo users all get this password. It is demo data, not a secret:
+# real secrets (the database password, the JWT key) stay in .env.
+DEMO_PASSWORD = "collab123"
 
 USERS = [("u-alice", "alice", "customer"),
          ("u-bob", "bob", "customer"),

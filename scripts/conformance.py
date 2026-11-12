@@ -21,12 +21,13 @@ import httpx
 from sqlalchemy import create_engine
 from app.config import settings
 import seed
+from seed import DEMO_PASSWORD
 
 API = os.environ.get("API_URL", "http://127.0.0.1:8000")
 SCHEMATHESIS = Path(sys.executable).parent / "schemathesis"   # installed next to python
 
 token = httpx.post(f"{API}/auth/login", json={
-    "username": "alice", "password": os.environ["DEMO_PASSWORD"]}).json()["accessToken"]
+    "username": "alice", "password": DEMO_PASSWORD}).json()["accessToken"]
 
 result = subprocess.run(
     [str(SCHEMATHESIS), "run", f"{API}/openapi.json",

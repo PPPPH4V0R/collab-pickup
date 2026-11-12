@@ -1,5 +1,7 @@
 // Staff sign-in page. There is no sign-up: staff accounts are created by
-// the shop. A customer account is refused here and its token is not kept.
+// the shop. A customer account gets the same answer as a wrong password
+// (so the page does not reveal that the account exists), and its token is
+// not kept.
 
 sessionStorage.clear();        // opening the sign-in page logs this tab out
 
@@ -20,7 +22,7 @@ document.getElementById("login-form").addEventListener("submit", async event => 
   if (!r.ok) {
     showAlert(alertBox, "err", errorText(r.data));
   } else if (decodeClaims(r.data.accessToken).role !== "staff") {
-    showAlert(alertBox, "err", "This account does not have staff access.");
+    showAlert(alertBox, "err", "Wrong username or password.");   // same as INVALID_CREDENTIALS
   } else {
     saveLogin(r.data, username);
     location.href = "/staff";

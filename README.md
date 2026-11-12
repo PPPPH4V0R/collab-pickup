@@ -91,7 +91,6 @@ Copy `.env.example` to `.env` and fill in the values:
 |---|---|
 | `DATABASE_URL` | e.g. `postgresql+psycopg://collab:<password>@127.0.0.1:5434/collab_pickup` |
 | `JWT_SECRET` | long random string used to sign tokens |
-| `DEMO_PASSWORD` | password that `seed.py` gives to the demo users |
 
 The service refuses to start if `DATABASE_URL` or `JWT_SECRET` is missing.
 No secret is stored in the code.
@@ -120,7 +119,9 @@ python migrate.py   # applies migrations/*.sql in order; safe to run again
 python seed.py      # resets all data to the demo menu and users
 ```
 
-Demo users: `alice`, `bob` (customers) and `staff` (staff), all with `DEMO_PASSWORD`.
+Demo users: `alice` and `bob` (customers) and `staff` (staff), all with the
+password `collab123`. It is demo data, set in `seed.py`; the real secrets
+(the database password and `JWT_SECRET`) stay in `.env`.
 Demo menu: Hero Burger (limited, max 2 per order; 10 on sale now, 6 more in a
 batch that opens tomorrow), Blue Soda (limited, 10), Fries (unlimited), and
 the Hero Set combo (burger + soda) with 3 bonus gifts.
