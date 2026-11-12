@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Collab Pickup - log in</title>
+<script src="/static/app.js"></script>
+</head>
+<body>
+<h1>Collab Pickup</h1>
+<p id="note"></p>
+
+<h2>Log in</h2>
+<form onsubmit="login(event)">
+  <p>Username <input id="loginUser" required></p>
+  <p>Password <input id="loginPassword" type="password" required></p>
+  <button>Log in</button>
+</form>
+
+<h2>Register (customers only)</h2>
+<form onsubmit="register(event)">
+  <p>Username <input id="newUser" required> (letters, digits, _ and -)</p>
+  <p>Password <input id="newPassword" type="password" minlength="8" required> (at least 8 characters)</p>
+  <button>Register</button>
+</form>
+
+<h2>Last response</h2>
+<pre id="out">(nothing yet)</pre>
+
+<script>
+sessionStorage.clear();        // opening the login page logs this tab out
+const next = new URLSearchParams(location.search).get("next");
+if (next) {
+  document.getElementById("note").textContent = `Log in to open ${next}.`;
+}
+
+// After login or registration, the role in the token decides the page.
+function enter(tokenResponse, username) {
+  sessionStorage.setItem("token", tokenResponse.accessToken);
+  sessionStorage.setItem("username", username);
+  location.href = claims().role === "staff" ? "/staff" : "/customer";
+}
+
+async function login(event) {
+  event.preventDefault();
+  const username = document.getElementById("loginUser").value;
+  const r = await api("POST", "/auth/login",
+                      { username, password: document.getElementById("loginPassword").value });
+  if (r.ok) enter(r.data, username);
+}
+
+async function register(event) {
+  event.preventDefault();
+  const username = document.getElementById("newUser").value;
+  const r = await api("POST", "/auth/register",
+                      { username, password: document.getElementById("newPassword").value });
+  if (r.ok) enter(r.data, username);
+}
+</script>
+</body>
+</html>

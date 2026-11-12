@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Collab Pickup - customer</title>
+<script src="/static/app.js"></script>
+</head>
+<body>
+<h1>Collab Pickup - customer</h1>
+<p><span id="who"></span> <button onclick="logout()">Log out</button></p>
+
+<h2>Menu</h2>
+<table border="1">
+  <thead><tr><th>Item</th><th>Price</th><th>Available</th><th>Limit per order</th><th>Bonus gift</th><th>Qty</th></tr></thead>
+  <tbody id="menu"></tbody>
+</table>
+<p>
+  <button onclick="placeOrder(false)">Place order</button> (new Idempotency-Key)
+  <button onclick="placeOrder(true)">Send the same request again</button> (same key)
+</p>
+
+<h2>My orders</h2>
+<table border="1">
+  <thead><tr><th>Order</th><th>Status</th><th>Total</th><th>Lines</th><th>Units taken from</th><th>Bonus</th><th></th></tr></thead>
+  <tbody id="orders"></tbody>
+</table>
+
+<h2>Last response</h2>
+<pre id="out">(nothing yet)</pre>
+
+<script>
+let lastOrder = null;          // { key, body } of the last order sent
+
+async function loadMenu() {
+  const r = await api("GET", "/menu", null, null, false);
+  document.getElementById("menu").innerHTML = r.data.items.map(i => `<tr>
+      <td>${i.name}</td>
+      <td>${i.price}</td>
+      <td>${i.available === null ? "unlimited" : i.available}</td>
+      <td>${i.perOrderLimit ?? "-"}</td>
+      <td>${i.kind === "combo" ? (i.bonusAvailable ? `yes, ${i.bonusRemaining} left` : "run out") : "-"}</td>
+      <td><input type="number" min="0" value="0" size="3" data-item="${i.id}"></td>
+    </tr>`).join("");
+}
+
+async function loadOrders() {
+  const r = await api("GET", "/orders", null, null, false);
+  document.getElementById("orders").innerHTML = r.data.orders.map(o => `<tr>
+      <td>${o.orderId}</td>
+      <td>${o.status}</td>
+      <td>${o.total}</td>
+      <td>${o.lines.map(l => `${l.qty} x ${l.itemId}`).join("<br>")}</td>
+      <td>${o.claimedUnits.map(c => `${c.qty} x ${c.itemId} from ${c.batchId}`).join("<br>") || "-"}</td>
+      <td>${o.bonus.map(b => b.included ? "included" : "run out").join("<br>") || "-"}</td>
+      <td>${o.status === "PENDING_PAYMENT" ? `<button onclick="cancelOrder('${o.orderId}')">Cancel</button>` : ""}</td>
+    </tr>`).join("");
+}
+
+async function placeOrder(sameKey) {
+  if (!sameKey || !lastOrder) {
+    const lines = [...document.querySelectorAll("input[data-item]")]
+      .filter(e => Number(e.value) > 0)
+      .map(e => ({ itemId: e.dataset.item, qty: Number(e.value) }));
+    lastOrder = { key: crypto.randomUUID(), body: { lines } };
+  }
+  await api("POST", "/orders", lastOrder.body, { "Idempotency-Key": lastOrder.key });
+  await loadOrders();
+  await loadMenu();
+}
+
+async function cancelOrder(orderId) {
+  await api("POST", `/orders/${orderId}/cancel`);
+  await loadOrders();
+  await loadMenu();
+}
+
+if (requireRole("customer")) {
+  loadMenu();
+  loadOrders();
+}
+</script>
+</body>
+</html>

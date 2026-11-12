@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Collab Pickup - staff</title>
+<script src="/static/app.js"></script>
+</head>
+<body>
+<h1>Collab Pickup - staff</h1>
+<p><span id="who"></span> <button onclick="logout()">Log out</button></p>
+
+<h2>Menu</h2>
+<table border="1">
+  <thead><tr><th>Item</th><th>Id</th><th>Available</th><th>Bonus gifts left</th></tr></thead>
+  <tbody id="menu"></tbody>
+</table>
+<p><button onclick="loadMenu()">Refresh</button></p>
+
+<h2>Add a release batch</h2>
+<form onsubmit="addBatch(event)">
+  <p>Item <select id="item"></select></p>
+  <p>Release at <input id="releaseAt" type="datetime-local"> (empty = now)</p>
+  <p>Quantity <input id="quantity" type="number" min="1" value="5" required></p>
+  <button>Add batch</button>
+</form>
+
+<h2>Last response</h2>
+<pre id="out">(nothing yet)</pre>
+
+<script>
+async function loadMenu() {
+  const r = await api("GET", "/menu", null, null, false);
+  document.getElementById("menu").innerHTML = r.data.items.map(i => `<tr>
+      <td>${i.name}</td>
+      <td>${i.id}</td>
+      <td>${i.available === null ? "unlimited" : i.available}</td>
+      <td>${i.kind === "combo" ? i.bonusRemaining : "-"}</td>
+    </tr>`).join("");
+  // Batches exist only for limited single items.
+  document.getElementById("item").innerHTML = r.data.items
+    .filter(i => i.kind === "single" && i.available !== null)
+    .map(i => `<option value="${i.id}">${i.name}</option>`).join("");
+}
+
+async function addBatch(event) {
+  event.preventDefault();
+  const local = document.getElementById("releaseAt").value;    // local time, no zone
+  await api("POST", `/items/${document.getElementById("item").value}/batches`, {
+    releaseAt: (local ? new Date(local) : new Date()).toISOString(),   // sent in UTC
+    quantity: Number(document.getElementById("quantity").value) });
+  await loadMenu();
+}
+
+if (requireRole("staff")) {
+  loadMenu();
+}
+</script>
+</body>
+</html>

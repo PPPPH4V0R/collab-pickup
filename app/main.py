@@ -1,10 +1,12 @@
 # Wiring: build the layers, create the FastAPI app, turn every error into
-# the one error shape of the contract, and add the health checks.
+# the one error shape of the contract, add the health checks and serve
+# the three test pages.
 # Run: uvicorn app.main:app --host 127.0.0.1 --port 8000
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException
 from app import api
 from app.auth import AuthError
@@ -99,11 +101,28 @@ def readiness():
     return {"status": "ready"}
 
 
-# ---------- test page (customer and staff) ----------
+# ---------- test pages: login/register, customer, staff ----------
+# Plain HTML clients of the API; not part of the contract.
 
 STATIC = Path(__file__).resolve().parent.parent / "static"
+app.mount("/static", StaticFiles(directory=STATIC), name="static")   # app.js
 
 
 @app.get("/", include_in_schema=False)
-def test_page():
-    return FileResponse(STATIC / "index.html")
+def home():
+    return RedirectResponse("/login")
+
+
+@app.get("/login", include_in_schema=False)
+def login_page():
+    return FileResponse(STATIC / "login.html")
+
+
+@app.get("/customer", include_in_schema=False)
+def customer_page():
+    return FileResponse(STATIC / "customer.html")
+
+
+@app.get("/staff", include_in_schema=False)
+def staff_page():
+    return FileResponse(STATIC / "staff.html")
