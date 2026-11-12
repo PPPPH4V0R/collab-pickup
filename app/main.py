@@ -16,11 +16,37 @@ from app.service import OrderService, error_body
 repo = PostgresRepository(make_engine(settings.database_url))   # the one place that picks the storage
 api.service = OrderService(repo)
 
-app = FastAPI(
-    title="Collab Pickup API",
-    version="0.1.0",
-    description="Pickup ordering for limited collab items, combos and bonus gifts. "
-                "Every error has the shape {\"error\": {\"code\", \"message\", \"details\"}}.")
+# The error catalog is part of the contract: each code, its status, and
+# whether the same request may be retried.
+DESCRIPTION = """
+Pickup ordering for limited collab items, combos and bonus gifts.
+
+Every error has the shape `{"error": {"code", "message", "details"}}`.
+
+| Code | Status | Meaning | Retry? | What the client should do |
+|---|---|---|---|---|
+| `VALIDATION_ERROR` | 400 | The request does not match the schema (bad JSON, missing field or header, qty out of range) | No | Fix the request |
+| `UNAUTHENTICATED` | 401 | No bearer token | After login | Log in, then send it with the token |
+| `INVALID_TOKEN` | 401 | Token forged, tampered, expired, or for another audience | After login | Log in again for a new token |
+| `INVALID_CREDENTIALS` | 401 | Wrong username or password | No | Ask the user again |
+| `FORBIDDEN` | 403 | Your role may not do this | No | Use an account with the right role |
+| `ORDER_NOT_FOUND` | 404 | No such order among yours | No | Check the order id |
+| `ITEM_NOT_FOUND` | 404 | No such item | No | Check the item id |
+| `HTTP_ERROR` | 404/405 | Unknown URL or wrong method | No | Check the URL and method |
+| `SOLD_OUT` | 409 | Not enough units on sale now | No, not with the same key (it replays SOLD_OUT) | Order later with a NEW Idempotency-Key, e.g. when a batch opens |
+| `ORDER_NOT_CANCELLABLE` | 409 | The order is past the point where it can be cancelled | No | Nothing to do |
+| `PER_ORDER_LIMIT` | 422 | More units of an item than one order may take | No | Lower the quantity and use a NEW key |
+| `UNKNOWN_ITEM` | 422 | An order line names an item not on the menu | No | Fix the line and use a NEW key |
+| `IDEMPOTENCY_KEY_REUSED` | 422 | This key was already used with a different request | No | Use a NEW key for a new request |
+| `BATCH_NOT_ALLOWED` | 422 | Batches only exist for limited single items | No | Pick a limited single item |
+| `INTERNAL_ERROR` | 500 | Unexpected failure on our side | Yes, with the SAME Idempotency-Key | Retry later: an order is saved together with its key, so the retry either replays it or places it once |
+
+`POST /orders` needs an `Idempotency-Key`. Resending the same key with the same body
+returns the original answer with the header `Idempotency-Replayed: true`.
+GET requests and `POST /orders/{id}/cancel` can always be retried safely.
+"""
+
+app = FastAPI(title="Collab Pickup API", version="0.1.0", description=DESCRIPTION)
 app.include_router(api.router)
 
 

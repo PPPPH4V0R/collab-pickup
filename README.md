@@ -165,14 +165,22 @@ Every error has the same shape:
 { "error": { "code": "SOLD_OUT", "message": "...", "details": { "itemId": "burger-hero" } } }
 ```
 
-| Status | Codes |
-|---|---|
-| 400 | `VALIDATION_ERROR` (bad JSON, missing field or header, qty < 1, ...) |
-| 401 | `UNAUTHENTICATED`, `INVALID_TOKEN`, `INVALID_CREDENTIALS` |
-| 403 | `FORBIDDEN` (wrong role) |
-| 404 | `ORDER_NOT_FOUND` (also for someone else's order), `ITEM_NOT_FOUND` |
-| 409 | `SOLD_OUT`, `ORDER_NOT_CANCELLABLE` |
-| 422 | `PER_ORDER_LIMIT`, `UNKNOWN_ITEM`, `IDEMPOTENCY_KEY_REUSED`, `BATCH_NOT_ALLOWED` |
+| Status | Code | Retry? |
+|---|---|---|
+| 400 | `VALIDATION_ERROR` (bad JSON, missing field or header, qty < 1, ...) | No: fix the request |
+| 401 | `UNAUTHENTICATED`, `INVALID_TOKEN` | After logging in again |
+| 401 | `INVALID_CREDENTIALS` | No |
+| 403 | `FORBIDDEN` (wrong role) | No |
+| 404 | `ORDER_NOT_FOUND` (also for someone else's order), `ITEM_NOT_FOUND`, `HTTP_ERROR` | No |
+| 409 | `SOLD_OUT` | Not with the same key (it replays `SOLD_OUT`); order later with a new key |
+| 409 | `ORDER_NOT_CANCELLABLE` | No |
+| 422 | `PER_ORDER_LIMIT`, `UNKNOWN_ITEM` | No: change the order and use a new key |
+| 422 | `IDEMPOTENCY_KEY_REUSED` | No: a new request needs a new key |
+| 422 | `BATCH_NOT_ALLOWED` | No |
+| 500 | `INTERNAL_ERROR` | Yes, with the **same** Idempotency-Key: it replays or places the order once |
+
+The same catalog, with what a client should do for each code, is in the
+description of `openapi.json` (shown at the top of `/docs`).
 
 ## Concurrency design in one paragraph
 
