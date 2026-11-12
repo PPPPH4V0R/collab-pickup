@@ -1,0 +1,14 @@
+# Local environment and secrets
+.venv/
+.env
+
+# Private PostgreSQL instance (data directory and its log)
+.pgdata/
+.pgdata.log
+
+# Python build output
+__pycache__/
+*.pyc
+
+# Logs
+*.log
