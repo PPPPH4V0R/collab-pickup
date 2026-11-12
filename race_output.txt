@@ -1,0 +1,11 @@
+[unsafe] 100 concurrent orders; burger batch b-burger-1 has 10 units, Hero Set has 3 bonus gifts
+  orders placed : 100   SOLD_OUT: 0   (elapsed 0.9s)
+  burgers sold  : 100 of 10   remaining in batch: 6
+  combos sold   : 50   bonus gifts given: 45 of 3   gifts left: 0
+  RESULT: OVERSOLD -- 90 burgers that do not exist were sold (lost update: each order wrote back its own stale 'remaining')
+
+[locked] 100 concurrent orders; burger batch b-burger-1 has 10 units, Hero Set has 3 bonus gifts
+  orders placed : 10   SOLD_OUT: 90   (elapsed 2.4s)
+  burgers sold  : 10 of 10   remaining in batch: 0
+  combos sold   : 5   bonus gifts given: 3 of 3   gifts left: 0
+  RESULT: CORRECT -- never more than 10 burgers or 3 gifts; every other order got SOLD_OUT
