@@ -46,11 +46,14 @@ app/
   auth.py        password hashing, issue()/verify() JWT, current_user (401), require_role (403)
   service.py     service layer: one method per use case, transactions, idempotency, ownership
   domain.py      domain layer: Item, Batch, BonusStock, Order and every business rule
-  repository.py  data layer: all SQL, unit of work, FOR UPDATE
+  repository.py           data layer interface: Repository, UnitOfWork (no SQL)
+  postgres_repository.py  the real implementation: all SQL, FOR UPDATE, READ COMMITTED
+  memory_repository.py    the test double: dictionaries, copy-on-start transactions
 migrations/      001_core.sql, 002_waitlist_outbox.sql
 migrate.py       applies the migrations in order, once each
 seed.py          resets the database to the demo data
-scripts/         race.py, double_submit.py, attacks.py, export_openapi.py
+scripts/         race.py, double_submit.py, attacks.py, conformance.py, export_openapi.py
+tests/           pytest tests (see "Running the tests")
 static/          index.html (test page)
 openapi.json     the published contract
 db.ps1           start/stop the private PostgreSQL instance
@@ -119,6 +122,8 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000
 - Use `127.0.0.1`, not `localhost`: on Windows `localhost` tries IPv6 first and adds about 2 s to each request.
 
 To refresh the contract file after changing the API: `python scripts/export_openapi.py`.
+`tests/test_contract.py` fails until you do, so the committed contract never
+falls behind the code.
 
 ## Demo scripts
 
@@ -150,12 +155,31 @@ python -m pytest -q
 | File | What it tests | Needs |
 |---|---|---|
 | `tests/test_domain.py` | every business rule in `domain.py` on plain objects | nothing |
-| `tests/test_service.py` | use cases on the real database: order, idempotent replay, key reuse, ownership, cancel | PostgreSQL running |
+| `tests/test_service_memory.py` | the use cases on the in-memory repository: order, replay, key reuse, ownership, cancel | nothing |
+| `tests/test_service.py` | the same use cases on the real database | PostgreSQL running |
 | `tests/test_api.py` | the HTTP layer with FastAPI's TestClient: 401, 403, 400, the error shape | nothing (requests are refused before the database) |
+| `tests/test_contract.py` | the committed `openapi.json` equals the contract the code generates | nothing |
 
 `test_service.py` resets the database to the demo data before each test, so it
 erases any orders you placed by hand. A sample run is in `test_output.txt`.
 The concurrency itself is tested by `scripts/race.py` (see above).
+
+## Conformance check (Schemathesis)
+
+Schemathesis reads the running service's contract, generates hundreds of
+requests for every operation (valid and invalid), and checks that no
+response is a 5xx and that every response body matches the contract's
+schema. With the service running:
+
+```powershell
+python scripts/conformance.py
+```
+
+It logs in as `alice`, saves the report to `conformance_output.txt`, and
+resets the demo data afterwards (it places many orders). Two warnings in the
+report are expected: random usernames get 401 and Alice gets 403 on the
+staff-only route; and most generated order lines name items that are not on
+the menu (422 `UNKNOWN_ITEM`), because the menu is data, not part of the schema.
 
 ## Error model
 
@@ -198,5 +222,5 @@ constraints are a last line of defence in the database.
 
 MockPay with an outbox worker, retries with backoff and compensation; the
 waitlist (its table already exists in migration 002); order rules; combo
-suggestions; the backward-compatible `choices` field; Schemathesis
-conformance checks; correlation-id logs; Docker Compose.
+suggestions; the backward-compatible `choices` field; correlation-id logs;
+Docker Compose.
