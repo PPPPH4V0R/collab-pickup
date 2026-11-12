@@ -32,8 +32,12 @@ def error_response(code, message, details=None):
 
 
 def errors(*statuses):
-    """Document which error statuses a route can return (for openapi.json)."""
-    return {s: {"model": schemas.ErrorResponse} for s in statuses}
+    """Document which error statuses a route can return (for openapi.json).
+    'default' says any other status has the same error shape. It also keeps
+    FastAPI from documenting its own 422 body: invalid input gets our 400."""
+    documented = {s: {"model": schemas.ErrorResponse} for s in statuses}
+    documented["default"] = {"model": schemas.ErrorResponse, "description": "Error"}
+    return documented
 
 
 # ---------- public ----------

@@ -61,7 +61,7 @@ def liveness():
     return {"status": "alive"}
 
 
-@app.get("/readyz", tags=["health"])
+@app.get("/readyz", tags=["health"], responses={503: {"description": "Database unreachable"}})
 def readiness():
     """Can we serve requests right now? Needs the database."""
     try:
