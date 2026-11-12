@@ -8,7 +8,7 @@ import json
 import secrets
 import time
 from datetime import datetime, timezone
-from app import domain
+from app import auth, domain
 from app.repository import DuplicateRequest
 
 
@@ -31,6 +31,17 @@ def error_body(code, message, details=None):
 class OrderService:
     def __init__(self, repo):
         self.repo = repo
+
+    # ---------- login ----------
+
+    def login(self, username, password):
+        with self.repo.unit_of_work() as uow:
+            user = uow.find_user(username)
+        if user is None or not auth.check_password(password, user["password_hash"]):
+            # Same answer for "no such user" and "wrong password".
+            raise auth.AuthError("INVALID_CREDENTIALS", "Wrong username or password.")
+        return {"accessToken": auth.issue(user["id"], user["role"]),
+                "tokenType": "Bearer", "expiresIn": auth.TOKEN_TTL_SECONDS}
 
     # ---------- queries ----------
 

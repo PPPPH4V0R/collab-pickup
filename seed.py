@@ -2,8 +2,8 @@
 # first, so each run starts from the same state.
 # Run: python seed.py
 import os
-import bcrypt
 from sqlalchemy import create_engine, text
+from app.auth import hash_password
 from app.config import settings
 
 # Demo users all get the same password, read from the environment (.env).
@@ -38,7 +38,7 @@ def reset(engine):
             " orders, order_lines, order_claims, order_bonuses,"
             " idempotency_records, waitlist_entries, outbox"
             " RESTART IDENTITY CASCADE"))
-        password_hash = bcrypt.hashpw(DEMO_PASSWORD.encode(), bcrypt.gensalt()).decode()
+        password_hash = hash_password(DEMO_PASSWORD)
         for user_id, username, role in USERS:
             conn.execute(text("INSERT INTO users (id, username, password_hash, role)"
                               " VALUES (:id, :u, :h, :r)"),
