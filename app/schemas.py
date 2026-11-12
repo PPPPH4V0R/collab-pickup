@@ -3,6 +3,11 @@
 # request that does not match them before any of our code runs.
 from pydantic import AwareDatetime, BaseModel, Field
 
+# Item ids, order ids and usernames are short slugs. Saying so in the
+# contract also rejects control characters such as NUL (which a PostgreSQL
+# text value cannot hold) with a 400 before they reach the database.
+ID_PATTERN = r"^[A-Za-z0-9_-]{1,64}$"
+
 
 # ---------- errors ----------
 
@@ -19,7 +24,7 @@ class ErrorResponse(BaseModel):
 # ---------- auth ----------
 
 class LoginRequest(BaseModel):
-    username: str = Field(examples=["alice"])
+    username: str = Field(pattern=ID_PATTERN, examples=["alice"])
     password: str
 
 
@@ -55,7 +60,7 @@ class MenuResponse(BaseModel):
 # ---------- orders ----------
 
 class OrderLineIn(BaseModel):
-    itemId: str = Field(examples=["combo-hero-set"])
+    itemId: str = Field(pattern=ID_PATTERN, examples=["combo-hero-set"])
     qty: int = Field(ge=1, le=50)
 
 

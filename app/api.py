@@ -1,7 +1,7 @@
 # Interface layer: each route only translates HTTP <-> service call.
 # No business rule lives here. The table below is the one place where
 # an error code becomes an HTTP status.
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends, Header, Path
 from fastapi.responses import JSONResponse
 from app import schemas
 from app.auth import User, current_user, require_role
@@ -82,13 +82,15 @@ def list_orders(user: User = Depends(require_role("customer"))):
 
 @router.get("/orders/{order_id}", response_model=schemas.OrderResponse,
             responses=errors(401, 403, 404), tags=["orders"])
-def get_order(order_id: str, user: User = Depends(require_role("customer"))):
+def get_order(order_id: str = Path(pattern=schemas.ID_PATTERN),
+              user: User = Depends(require_role("customer"))):
     return service.get_order(user.id, order_id)
 
 
 @router.post("/orders/{order_id}/cancel", response_model=schemas.OrderResponse,
              responses=errors(401, 403, 404, 409), tags=["orders"])
-def cancel_order(order_id: str, user: User = Depends(require_role("customer"))):
+def cancel_order(order_id: str = Path(pattern=schemas.ID_PATTERN),
+                 user: User = Depends(require_role("customer"))):
     """Cancel your own order; its units and bonus gifts go back to stock.
     Cancelling an already cancelled order returns it unchanged."""
     return service.cancel_order(user.id, order_id)
@@ -98,7 +100,8 @@ def cancel_order(order_id: str, user: User = Depends(require_role("customer"))):
 
 @router.post("/items/{item_id}/batches", status_code=201, response_model=schemas.BatchResponse,
              responses=errors(400, 401, 403, 404, 422), tags=["staff"])
-def add_batch(item_id: str, body: schemas.BatchRequest,
+def add_batch(body: schemas.BatchRequest,
+              item_id: str = Path(pattern=schemas.ID_PATTERN),
               user: User = Depends(require_role("staff"))):
     """Schedule a release batch for a limited single item."""
     return service.add_batch(item_id, body.releaseAt, body.quantity)

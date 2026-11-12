@@ -272,6 +272,7 @@
             "required": true,
             "schema": {
               "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,64}$",
               "title": "Order Id"
             }
           }
@@ -350,6 +351,7 @@
             "required": true,
             "schema": {
               "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,64}$",
               "title": "Order Id"
             }
           }
@@ -438,6 +440,7 @@
             "required": true,
             "schema": {
               "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,64}$",
               "title": "Item Id"
             }
           }
@@ -734,6 +737,7 @@
         "properties": {
           "username": {
             "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
             "title": "Username",
             "examples": [
               "alice"
@@ -864,6 +868,7 @@
         "properties": {
           "itemId": {
             "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
             "title": "Itemid",
             "examples": [
               "combo-hero-set"

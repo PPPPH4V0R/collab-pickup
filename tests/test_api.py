@@ -50,6 +50,14 @@ def test_quantity_zero_gives_400():
     assert_error_shape(response, "VALIDATION_ERROR")
 
 
+def test_control_character_in_an_id_gives_400_not_500():
+    # PostgreSQL text cannot hold NUL; the contract's id pattern stops it first.
+    response = client.post("/orders", json={"lines": [{"itemId": "fries\x00", "qty": 1}]},
+                           headers={**ALICE, "Idempotency-Key": "k1"})
+    assert response.status_code == 400
+    assert_error_shape(response, "VALIDATION_ERROR")
+
+
 def test_unknown_url_uses_the_same_error_shape():
     response = client.get("/no-such-page")
     assert response.status_code == 404
