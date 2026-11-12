@@ -124,6 +124,33 @@ class PostgresUnitOfWork(UnitOfWork):
                   {"id": batch.id, "item_id": batch.item_id, "release_at": batch.release_at,
                    "quantity": batch.quantity, "remaining": batch.remaining})
 
+    def add_item(self, item, bonus_stock):
+        # The primary key decides between two staff adding the same id at
+        # once, like the username on sign-up: 0 rows = taken, never a 500.
+        inserted = self._run(
+            "INSERT INTO items (id, name, kind, price, limited, per_order_limit)"
+            " VALUES (:id, :name, :kind, :price, :limited, :limit)"
+            " ON CONFLICT (id) DO NOTHING",
+            {"id": item.id, "name": item.name, "kind": item.kind, "price": item.price,
+             "limited": item.limited, "limit": item.per_order_limit}).rowcount
+        if inserted == 0:
+            return False
+        for part_id, qty in item.components.items():
+            self._run("INSERT INTO combo_components (combo_id, item_id, qty)"
+                      " VALUES (:c, :i, :q)", {"c": item.id, "i": part_id, "q": qty})
+        if bonus_stock is not None:
+            self._run("INSERT INTO bonus_gifts (combo_id, remaining) VALUES (:c, :r)",
+                      {"c": bonus_stock.combo_id, "r": bonus_stock.remaining})
+        return True
+
+    def add_bonus_gifts(self, combo_id, quantity):
+        # One statement, no read-then-write. If an order holds this row
+        # (FOR UPDATE), the UPDATE waits for it and then adds to the value
+        # that order committed, so neither change is lost.
+        return self._run("UPDATE bonus_gifts SET remaining = remaining + :n"
+                         " WHERE combo_id = :c RETURNING remaining",
+                         {"n": quantity, "c": combo_id}).scalar()
+
     # ---------- orders ----------
 
     def add_order(self, order):

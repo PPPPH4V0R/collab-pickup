@@ -87,6 +87,18 @@ class MemoryUnitOfWork(UnitOfWork):
     def add_batch(self, batch):
         self.data["batches"][batch.id] = copy.deepcopy(batch)
 
+    def add_item(self, item, bonus_stock):
+        if item.id in self.data["items"]:
+            return False
+        self.data["items"][item.id] = copy.deepcopy(item)
+        if bonus_stock is not None:
+            self.data["bonus"][bonus_stock.combo_id] = copy.deepcopy(bonus_stock)
+        return True
+
+    def add_bonus_gifts(self, combo_id, quantity):
+        self.data["bonus"][combo_id].remaining += quantity
+        return self.data["bonus"][combo_id].remaining
+
     # ---------- orders ----------
 
     def add_order(self, order):

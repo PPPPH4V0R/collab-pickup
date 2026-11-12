@@ -62,6 +62,21 @@ class UsernameTaken(DomainError):
     message = "This username is already taken."
 
 
+class InvalidItem(DomainError):
+    code = "INVALID_ITEM"
+    message = "The new menu item breaks a menu rule (see details.reason)."
+
+
+class ItemIdTaken(DomainError):
+    code = "ITEM_ID_TAKEN"
+    message = "An item with this id already exists."
+
+
+class NotACombo(DomainError):
+    code = "NOT_A_COMBO"
+    message = "Bonus gifts belong to combos; this item is not a combo."
+
+
 # ---------- accounts ----------
 
 def new_customer(user_id, username, password_hash):
@@ -251,3 +266,46 @@ def new_batch(batch_id, item, release_at, quantity):
     if item.is_combo or not item.limited:
         raise BatchNotAllowed(itemId=item.id)
     return Batch(batch_id, item.id, release_at, quantity, quantity)
+
+
+def new_menu_item(item_id, name, kind, price, limited, per_order_limit,
+                  components, bonus_gifts, items):
+    """Staff add a single item or a combo to the menu.
+    components: [(item_id, qty)] for a combo; items: the current menu.
+    Returns (Item, BonusStock or None). A combo always gets a gift row,
+    even with 0 gifts, so gifts can be added to it later."""
+    if Decimal(price) <= 0:
+        raise InvalidItem(itemId=item_id, reason="The price must be greater than 0.")
+
+    if kind == "single":
+        if components or bonus_gifts is not None:
+            raise InvalidItem(itemId=item_id,
+                              reason="A single item has no components and no bonus gifts.")
+        # A new limited item has no batches yet, so it shows as sold out
+        # until staff add one.
+        return Item(item_id, name, "single", price, bool(limited), per_order_limit), None
+
+    # A combo has no stock or limit of its own: both come from its components.
+    if limited is not None or per_order_limit is not None:
+        raise InvalidItem(itemId=item_id, reason="A combo takes its stock and per-order "
+                                                 "limits from its components.")
+    if not components:
+        raise InvalidItem(itemId=item_id, reason="A combo needs at least one component.")
+    part_ids = [part_id for part_id, _ in components]
+    if len(set(part_ids)) != len(part_ids):
+        raise InvalidItem(itemId=item_id, reason="Each component may appear only once; "
+                                                 "use qty for more than one.")
+    for part_id in part_ids:
+        part = items.get(part_id)
+        if part is None or part.is_combo:
+            raise InvalidItem(itemId=item_id, component=part_id,
+                              reason="Components must be existing single items "
+                                     "(a combo cannot contain a combo).")
+    combo = Item(item_id, name, "combo", price, False, None, dict(components))
+    return combo, BonusStock(item_id, bonus_gifts or 0)
+
+
+def check_takes_bonus_gifts(item):
+    """Only combos come with bonus gifts."""
+    if not item.is_combo:
+        raise NotACombo(itemId=item.id)

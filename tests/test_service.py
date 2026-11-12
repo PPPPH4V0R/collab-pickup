@@ -3,6 +3,7 @@
 # tests ERASE whatever is in that database.
 # Run from the project root: python -m pytest -q tests/test_service.py
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
 import pytest
 from sqlalchemy import text
 from app import domain
@@ -102,3 +103,32 @@ def test_sold_out_order_changes_nothing(service):
     assert out.code == "SOLD_OUT"
     assert order_count() == 0
     assert remaining("b-soda-1") == 10
+
+
+def test_new_limited_item_sells_after_staff_add_a_batch(service):
+    service.add_menu_item("cake", "Cake", "single", "6.00", True, None, None, None)
+    sold_out = service.place_order("u-alice", "k1", [{"itemId": "cake", "qty": 1}])
+    assert sold_out.code == "SOLD_OUT"                    # no batch yet
+    service.add_batch("cake", datetime.now(timezone.utc), 3)
+    out = service.place_order("u-alice", "k2", [{"itemId": "cake", "qty": 1}])
+    assert out.ok and out.value["claimedUnits"][0]["itemId"] == "cake"
+
+
+def test_adding_gifts_while_orders_take_them_loses_nothing(service):
+    # 20 Hero Set orders (only 10 burgers, so 10 succeed) race against
+    # 10 staff requests that each add 1 gift. The orders lock the gift row
+    # and write it back; the top-ups add in one UPDATE. If either side lost
+    # an update, the books would not balance.
+    def order(n):
+        return service.place_order("u-alice", f"k{n}", HERO_SET)
+    def top_up(_):
+        return service.add_bonus_gifts("combo-hero-set", 1)
+    with ThreadPoolExecutor(max_workers=30) as pool:
+        orders = [pool.submit(order, n) for n in range(20)]
+        top_ups = [pool.submit(top_up, n) for n in range(10)]
+        results = [f.result() for f in orders] + [f.result() for f in top_ups]
+    with engine.connect() as conn:
+        given = conn.execute(text("SELECT COUNT(*) FROM order_bonuses WHERE included")).scalar()
+    assert sum(1 for r in results[:20] if r.ok) == 10
+    assert gifts_left() == 3 + 10 - given                 # start + added - handed out
+

@@ -3,9 +3,10 @@
 # Run from the project root: python -m pytest -q tests/test_domain.py
 from datetime import datetime, timezone
 import pytest
-from app.domain import (Batch, BonusStock, Item, Order, BatchNotAllowed, OrderNotCancellable,
-                        PerOrderLimit, SoldOut, UnknownItem, available,
-                        check_per_order_limits, give_back, new_batch, place_order, units_needed,
+from app.domain import (Batch, BonusStock, Item, Order, BatchNotAllowed, InvalidItem,
+                        NotACombo, OrderNotCancellable, PerOrderLimit, SoldOut, UnknownItem,
+                        available, check_per_order_limits, check_takes_bonus_gifts, give_back,
+                        new_batch, new_menu_item, place_order, units_needed,
                         PENDING_PAYMENT, CANCELLED)
 
 NOW = datetime(2026, 11, 13, 12, 0, tzinfo=timezone.utc)
@@ -171,3 +172,65 @@ def test_new_batch_refused_for_a_combo():
 def test_new_batch_refused_for_an_unlimited_item():
     with pytest.raises(BatchNotAllowed):
         new_batch("b9", ITEMS["fries"], NOW, 5)
+
+
+# ---------- staff adding items and combos ----------
+
+def new_combo(components, **changes):
+    fields = dict(item_id="duo", name="Duo", kind="combo", price="9.50", limited=None,
+                  per_order_limit=None, components=components, bonus_gifts=2, items=ITEMS)
+    fields.update(changes)
+    return new_menu_item(**fields)
+
+
+def test_new_combo_with_its_gifts():
+    combo, gifts = new_combo([("soda", 2)])
+    assert combo.is_combo and combo.components == {"soda": 2}
+    assert (gifts.combo_id, gifts.remaining) == ("duo", 2)
+
+
+def test_new_limited_single_item_has_no_stock_until_a_batch_is_added():
+    item, gifts = new_menu_item("cake", "Cake", "single", "6.00", True, 1, [], None, ITEMS)
+    assert item.limited and gifts is None
+    assert available(item, {**ITEMS, "cake": item}, []) == 0
+
+
+def test_combo_needs_components():
+    with pytest.raises(InvalidItem):
+        new_combo([])
+
+
+def test_combo_cannot_contain_a_combo():
+    with pytest.raises(InvalidItem):
+        new_combo([("set", 1)])
+
+
+def test_combo_components_must_exist():
+    with pytest.raises(InvalidItem):
+        new_combo([("pizza", 1)])
+
+
+def test_combo_lists_each_component_once():
+    with pytest.raises(InvalidItem):
+        new_combo([("soda", 1), ("soda", 1)])
+
+
+def test_combo_has_no_per_order_limit_of_its_own():
+    with pytest.raises(InvalidItem):
+        new_combo([("soda", 1)], per_order_limit=2)
+
+
+def test_single_item_cannot_have_components():
+    with pytest.raises(InvalidItem):
+        new_menu_item("x", "X", "single", "1.00", False, None, [("soda", 1)], None, ITEMS)
+
+
+def test_price_must_be_above_zero():
+    with pytest.raises(InvalidItem):
+        new_combo([("soda", 1)], price="0.00")
+
+
+def test_only_combos_take_bonus_gifts():
+    check_takes_bonus_gifts(ITEMS["set"])
+    with pytest.raises(NotACombo):
+        check_takes_bonus_gifts(ITEMS["burger"])

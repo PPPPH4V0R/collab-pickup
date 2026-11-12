@@ -1,6 +1,7 @@
 # Request and response shapes of the contract. FastAPI turns these
 # Pydantic models into the JSON Schemas of openapi.json, and rejects a
 # request that does not match them before any of our code runs.
+from typing import Literal
 from pydantic import AwareDatetime, BaseModel, Field, field_validator
 
 # Item ids, order ids and usernames are short slugs. Saying so in the
@@ -120,6 +121,34 @@ class OrderListResponse(BaseModel):
 
 class BatchRequest(BaseModel):
     releaseAt: AwareDatetime = Field(description="With a time zone, e.g. 2026-11-13T14:00:00-05:00")
+    quantity: int = Field(ge=1, le=1000)
+
+
+PRICE_PATTERN = r"^\d{1,6}(\.\d{1,2})?$"       # a string, e.g. "12.50": no floats for money
+NAME_PATTERN = r"^[^\x00-\x1F\x7F]+$"         # any text without control characters (NUL etc.)
+
+
+class ComponentIn(BaseModel):
+    itemId: str = Field(pattern=ID_PATTERN, examples=["burger-hero"])
+    qty: int = Field(ge=1, le=20)
+
+
+class NewItemRequest(BaseModel):
+    """A single item: limited and perOrderLimit may be set; components and
+    bonusGifts must be left out. A combo: components (at least one existing
+    single item) and bonusGifts; limited and perOrderLimit must be left out."""
+    id: str = Field(pattern=ID_PATTERN, examples=["combo-blue-duo"])
+    name: str = Field(min_length=1, max_length=80, pattern=NAME_PATTERN,
+                      examples=["Blue Duo (2 sodas)"])
+    kind: Literal["single", "combo"]
+    price: str = Field(pattern=PRICE_PATTERN, examples=["9.50"])
+    limited: bool | None = None
+    perOrderLimit: int | None = Field(default=None, ge=1, le=50)
+    components: list[ComponentIn] | None = Field(default=None, max_length=10)
+    bonusGifts: int | None = Field(default=None, ge=0, le=1000)
+
+
+class BonusGiftsRequest(BaseModel):
     quantity: int = Field(ge=1, le=1000)
 
 

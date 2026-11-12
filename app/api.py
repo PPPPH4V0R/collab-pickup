@@ -21,10 +21,13 @@ STATUS = {
     "SOLD_OUT": 409,
     "ORDER_NOT_CANCELLABLE": 409,
     "USERNAME_TAKEN": 409,
+    "ITEM_ID_TAKEN": 409,
     "PER_ORDER_LIMIT": 422,
     "UNKNOWN_ITEM": 422,
     "IDEMPOTENCY_KEY_REUSED": 422,
     "BATCH_NOT_ALLOWED": 422,
+    "INVALID_ITEM": 422,
+    "NOT_A_COMBO": 422,
 }
 
 
@@ -114,3 +117,22 @@ def add_batch(body: schemas.BatchRequest,
               user: User = Depends(require_role("staff"))):
     """Schedule a release batch for a limited single item."""
     return service.add_batch(item_id, body.releaseAt, body.quantity)
+
+
+@router.post("/items", status_code=201, response_model=schemas.MenuItem,
+             responses=errors(400, 401, 403, 409, 422), tags=["staff"])
+def add_menu_item(body: schemas.NewItemRequest, user: User = Depends(require_role("staff"))):
+    """Add a single item or a combo to the menu. A new limited item has no
+    batches yet, so it shows as sold out until a batch is added."""
+    components = [c.model_dump() for c in body.components] if body.components else None
+    return service.add_menu_item(body.id, body.name, body.kind, body.price, body.limited,
+                                 body.perOrderLimit, components, body.bonusGifts)
+
+
+@router.post("/items/{item_id}/bonus-gifts", response_model=schemas.MenuItem,
+             responses=errors(400, 401, 403, 404, 422), tags=["staff"])
+def add_bonus_gifts(body: schemas.BonusGiftsRequest,
+                    item_id: str = Path(pattern=schemas.ID_PATTERN),
+                    user: User = Depends(require_role("staff"))):
+    """Add bonus gifts to a combo."""
+    return service.add_bonus_gifts(item_id, body.quantity)

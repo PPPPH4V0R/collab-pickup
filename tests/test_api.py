@@ -9,6 +9,7 @@ from app.main import app
 
 client = TestClient(app)
 ALICE = {"Authorization": f"Bearer {issue('u-alice', 'customer')}"}
+STAFF = {"Authorization": f"Bearer {issue('u-staff', 'staff')}"}
 NEW_BATCH = {"releaseAt": "2026-11-13T09:00:00-05:00", "quantity": 5}
 HERO_SET = {"lines": [{"itemId": "combo-hero-set", "qty": 1}]}
 
@@ -100,6 +101,49 @@ def test_register_cannot_ask_for_the_staff_role():
         "username": new_username(), "password": "long-enough", "role": "staff"})
     assert response.status_code == 201
     assert verify(response.json()["accessToken"])["role"] == "customer"
+
+
+# ---------- staff: new menu items (the 201 / 409 / 422 ones reach the database) ----------
+
+def new_combo_body():
+    return {"id": f"duo_{secrets.token_hex(4)}", "name": "Blue Duo", "kind": "combo",
+            "price": "9.50", "components": [{"itemId": "drink-blue-soda", "qty": 2}],
+            "bonusGifts": 2}
+
+
+def test_customer_cannot_add_menu_items():
+    response = client.post("/items", json=new_combo_body(), headers=ALICE)
+    assert response.status_code == 403
+    assert_error_shape(response, "FORBIDDEN")
+
+
+def test_staff_add_a_combo_gives_201_and_a_menu_entry():
+    body = new_combo_body()
+    response = client.post("/items", json=body, headers=STAFF)
+    assert response.status_code == 201
+    entry = response.json()
+    assert (entry["id"], entry["kind"], entry["bonusRemaining"]) == (body["id"], "combo", 2)
+
+
+def test_staff_add_an_existing_id_gives_409():
+    body = new_combo_body()
+    client.post("/items", json=body, headers=STAFF)
+    response = client.post("/items", json=body, headers=STAFF)
+    assert response.status_code == 409
+    assert_error_shape(response, "ITEM_ID_TAKEN")
+
+
+def test_combo_inside_a_combo_gives_422():
+    body = {**new_combo_body(), "components": [{"itemId": "combo-hero-set", "qty": 1}]}
+    response = client.post("/items", json=body, headers=STAFF)
+    assert response.status_code == 422
+    assert_error_shape(response, "INVALID_ITEM")
+
+
+def test_price_must_be_a_money_string():
+    response = client.post("/items", json={**new_combo_body(), "price": "9.999"}, headers=STAFF)
+    assert response.status_code == 400
+    assert_error_shape(response, "VALIDATION_ERROR")
 
 
 def test_liveness_needs_nothing():

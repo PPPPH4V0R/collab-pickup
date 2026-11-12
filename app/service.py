@@ -179,6 +179,34 @@ class OrderService:
                 "releaseAt": _iso(batch.release_at),
                 "quantity": batch.quantity, "remaining": batch.remaining}
 
+    def add_menu_item(self, item_id, name, kind, price, limited, per_order_limit,
+                      components, bonus_gifts):
+        """components: [{"itemId", "qty"}] or None. Returns the new menu entry."""
+        parts = [(c["itemId"], c["qty"]) for c in components or []]
+        with self.repo.unit_of_work() as uow:
+            items = uow.load_items()
+            item, gifts = domain.new_menu_item(item_id, name, kind, price, limited,
+                                               per_order_limit, parts, bonus_gifts, items)
+            if not uow.add_item(item, gifts):            # item, components, gifts: one transaction
+                raise domain.ItemIdTaken(itemId=item_id)
+            return self._menu_entry_now(uow, item_id)
+
+    def add_bonus_gifts(self, item_id, quantity):
+        """Top up a combo's gifts. Returns its menu entry with the new count."""
+        with self.repo.unit_of_work() as uow:
+            item = uow.load_items().get(item_id)
+            if item is None:
+                raise domain.ItemNotFound(itemId=item_id)
+            domain.check_takes_bonus_gifts(item)
+            uow.add_bonus_gifts(item_id, quantity)
+            return self._menu_entry_now(uow, item_id)
+
+    def _menu_entry_now(self, uow, item_id):
+        items = uow.load_items()
+        batches = uow.load_released_batches(items.keys(), lock=False)
+        gifts = uow.load_bonus_stock([item_id], lock=False)
+        return self._menu_entry(items[item_id], items, batches, gifts)
+
     # ---------- ids and DTOs: the shapes the contract promises ----------
 
     def _new_order_id(self):

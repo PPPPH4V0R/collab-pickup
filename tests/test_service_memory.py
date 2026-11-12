@@ -113,3 +113,39 @@ def test_failed_transaction_leaves_no_trace(service):
             uow.save_stock([batch], [])
             raise RuntimeError("crash before commit")
     assert stock(service) == (10, 10, 3)
+
+
+# ---------- staff: new items, combos, bonus gifts ----------
+
+def test_staff_add_a_limited_item_then_a_batch_puts_it_on_sale(service):
+    entry = service.add_menu_item("cake", "Cake", "single", "6.00", True, 1, None, None)
+    assert entry["available"] == 0                       # no batch yet: shows as sold out
+    service.add_batch("cake", datetime.now(timezone.utc), 4)
+    out = service.place_order("u-alice", "k1", [{"itemId": "cake", "qty": 1}])
+    assert out.ok and out.value["total"] == "6.00"
+
+
+def test_staff_add_a_combo_that_shares_its_components_stock(service):
+    entry = service.add_menu_item("blue-duo", "Blue Duo", "combo", "9.50", None, None,
+                                  [{"itemId": "drink-blue-soda", "qty": 2}], 1)
+    assert (entry["available"], entry["bonusRemaining"]) == (5, 1)      # 10 sodas / 2
+    out = service.place_order("u-alice", "k1", [{"itemId": "blue-duo", "qty": 1}])
+    assert out.value["bonus"][0]["included"]
+    assert stock(service)[1] == 8                        # took 2 sodas
+
+
+def test_staff_cannot_reuse_an_item_id(service):
+    with pytest.raises(domain.ItemIdTaken):
+        service.add_menu_item("burger-hero", "Another", "single", "1.00", False, None, None, None)
+
+
+def test_staff_add_bonus_gifts_to_a_combo(service):
+    entry = service.add_bonus_gifts("combo-hero-set", 5)
+    assert entry["bonusRemaining"] == 8
+    assert stock(service)[2] == 8
+
+
+def test_bonus_gifts_only_for_combos(service):
+    with pytest.raises(domain.NotACombo):
+        service.add_bonus_gifts("burger-hero", 5)
+

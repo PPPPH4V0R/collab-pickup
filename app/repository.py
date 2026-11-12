@@ -80,6 +80,17 @@ class UnitOfWork(ABC):
     @abstractmethod
     def add_batch(self, batch): ...
 
+    @abstractmethod
+    def add_item(self, item, bonus_stock):
+        """Insert a menu item, its combo components and (for a combo) its gift
+        row. Returns False (and inserts nothing) if the id is already taken,
+        also by a concurrent transaction."""
+
+    @abstractmethod
+    def add_bonus_gifts(self, combo_id, quantity):
+        """Add gifts in one atomic step (no read-then-write, so a concurrent
+        order cannot be lost). Returns the new remaining count."""
+
     # ---------- orders ----------
 
     @abstractmethod
