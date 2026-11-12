@@ -12,3 +12,7 @@ __pycache__/
 
 # Logs
 *.log
+
+# Schemathesis working files
+.schemathesis/
+.hypothesis/

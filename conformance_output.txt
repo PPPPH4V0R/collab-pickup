@@ -1,0 +1,72 @@
+Schemathesis v4.33.2
+━━━━━━━━━━━━━━━━━━━━
+
+ ✅  Loaded specification from http://127.0.0.1:8000/openapi.json (in 0.45s)
+
+     Base URL:         http://127.0.0.1:8000/
+     Specification:    Open API 3.1.0
+     Operations:       9 selected / 9 total
+
+ ✅  API capabilities:
+
+     Supports NULL byte in headers:                            ✘
+     Accepts backslash and control characters in URL paths:    ✓
+
+ ✅  Examples (in 0.36s)
+
+     ✅ 2 passed  ⏭  7 skipped
+
+ ✅  Coverage (in 0.80s)
+
+     ✅ 9 passed
+
+ ✅  Fuzzing (in 2.26s)
+
+     ✅ 9 passed
+
+ ✅  Stateful (in 2.08s)
+
+     Scenarios:    61
+     API Links:    5 covered / 7 selected / 7 total (7 inferred)
+
+     ✅ 61 passed
+
+=================================== WARNINGS ===================================
+
+Authentication failed: 2 operations returned only 401/403 responses
+
+401 Unauthorized (1 operation):
+  - POST /auth/login
+403 Forbidden (1 operation):
+  - POST /items/{item_id}/batches
+
+💡 Ensure valid authentication credentials are set via `--auth` or `-H`
+
+Schema validation mismatch: 1 operation mostly rejected generated data due to validation errors, indicating schema constraints don't match API validation
+
+  - POST /orders
+
+💡 Check your schema constraints - API validation may be stricter than documented
+
+=================================== SUMMARY ====================================
+
+API Operations:
+  Selected: 9/9
+  Tested: 9
+
+Test Phases:
+  ✅ Examples
+  ✅ Coverage
+  ✅ Fuzzing
+  ✅ Stateful
+
+Warnings:
+  ⚠️ Authentication failed: 2 operations returned only 401/403 responses
+  ⚠️ Schema validation mismatch: 1 operation mostly rejected generated data
+
+Test cases:
+  727 generated, 727 passed
+
+Seed: 387
+
+============================= 2 warnings in 5.69s ==============================

@@ -1,47 +1,59 @@
 ============================= test session starts =============================
 platform win32 -- Python 3.14.6, pytest-9.2.0, pluggy-1.7.0 -- C:\Assignments\SOEN387\proj\collab-pickup\.venv\Scripts\python.exe
+hypothesis profile 'default'
 rootdir: C:\Assignments\SOEN387\proj\collab-pickup
 configfile: pytest.ini
 testpaths: tests
-plugins: anyio-4.16.0
-collecting ... collected 36 items
+plugins: anyio-4.16.0, hypothesis-6.170.15, schemathesis-4.33.2
+collecting ... collected 47 items
 
 tests/test_api.py::test_no_token_gives_401 PASSED                        [  2%]
-tests/test_api.py::test_garbage_token_gives_401 PASSED                   [  5%]
-tests/test_api.py::test_customer_on_staff_route_gives_403 PASSED         [  8%]
-tests/test_api.py::test_missing_idempotency_key_gives_400 PASSED         [ 11%]
-tests/test_api.py::test_quantity_zero_gives_400 PASSED                   [ 13%]
-tests/test_api.py::test_unknown_url_uses_the_same_error_shape PASSED     [ 16%]
-tests/test_api.py::test_liveness_needs_nothing PASSED                    [ 19%]
-tests/test_domain.py::test_combo_expands_into_its_items PASSED           [ 22%]
-tests/test_domain.py::test_unknown_item_is_rejected PASSED               [ 25%]
-tests/test_domain.py::test_per_order_limit_on_single_item PASSED         [ 27%]
-tests/test_domain.py::test_per_order_limit_counts_items_inside_combos PASSED [ 30%]
-tests/test_domain.py::test_order_at_the_limit_is_allowed PASSED          [ 33%]
-tests/test_domain.py::test_units_come_from_the_earliest_batch PASSED     [ 36%]
-tests/test_domain.py::test_units_can_span_two_batches PASSED             [ 38%]
-tests/test_domain.py::test_sold_out_leaves_all_stock_untouched PASSED    [ 41%]
-tests/test_domain.py::test_limited_item_with_no_released_batch_is_sold_out PASSED [ 44%]
-tests/test_domain.py::test_unlimited_item_needs_no_batch PASSED          [ 47%]
-tests/test_domain.py::test_new_order_waits_for_payment_and_has_a_total PASSED [ 50%]
-tests/test_domain.py::test_combo_gets_a_gift_while_gifts_last PASSED     [ 52%]
-tests/test_domain.py::test_combo_still_sells_when_gifts_run_out PASSED   [ 55%]
-tests/test_domain.py::test_gifts_are_given_one_per_combo_unit PASSED     [ 58%]
-tests/test_domain.py::test_cancel_gives_units_and_gift_back PASSED       [ 61%]
-tests/test_domain.py::test_cancelling_twice_gives_nothing_back_the_second_time PASSED [ 63%]
-tests/test_domain.py::test_only_pending_orders_can_be_cancelled PASSED   [ 66%]
-tests/test_domain.py::test_combo_availability_is_its_scarcest_component PASSED [ 69%]
-tests/test_domain.py::test_unlimited_item_has_no_availability_number PASSED [ 72%]
-tests/test_domain.py::test_new_batch_for_limited_single_item PASSED      [ 75%]
-tests/test_domain.py::test_new_batch_refused_for_a_combo PASSED          [ 77%]
-tests/test_domain.py::test_new_batch_refused_for_an_unlimited_item PASSED [ 80%]
-tests/test_service.py::test_order_takes_units_and_a_gift PASSED          [ 83%]
-tests/test_service.py::test_same_key_same_body_replays_one_order PASSED  [ 86%]
-tests/test_service.py::test_same_key_different_body_is_refused PASSED    [ 88%]
-tests/test_service.py::test_customer_cannot_read_another_customers_order PASSED [ 91%]
-tests/test_service.py::test_customer_cannot_cancel_another_customers_order PASSED [ 94%]
-tests/test_service.py::test_cancel_returns_units_to_their_batches_and_the_gift PASSED [ 97%]
-tests/test_service.py::test_sold_out_order_changes_nothing PASSED        [100%]
+tests/test_api.py::test_garbage_token_gives_401 PASSED                   [  4%]
+tests/test_api.py::test_customer_on_staff_route_gives_403 PASSED         [  6%]
+tests/test_api.py::test_missing_idempotency_key_gives_400 PASSED         [  8%]
+tests/test_api.py::test_quantity_zero_gives_400 PASSED                   [ 10%]
+tests/test_api.py::test_control_character_in_an_id_gives_400_not_500 PASSED [ 12%]
+tests/test_api.py::test_unknown_url_uses_the_same_error_shape PASSED     [ 14%]
+tests/test_api.py::test_liveness_needs_nothing PASSED                    [ 17%]
+tests/test_contract.py::test_committed_contract_matches_the_code PASSED  [ 19%]
+tests/test_domain.py::test_combo_expands_into_its_items PASSED           [ 21%]
+tests/test_domain.py::test_unknown_item_is_rejected PASSED               [ 23%]
+tests/test_domain.py::test_per_order_limit_on_single_item PASSED         [ 25%]
+tests/test_domain.py::test_per_order_limit_counts_items_inside_combos PASSED [ 27%]
+tests/test_domain.py::test_order_at_the_limit_is_allowed PASSED          [ 29%]
+tests/test_domain.py::test_units_come_from_the_earliest_batch PASSED     [ 31%]
+tests/test_domain.py::test_units_can_span_two_batches PASSED             [ 34%]
+tests/test_domain.py::test_sold_out_leaves_all_stock_untouched PASSED    [ 36%]
+tests/test_domain.py::test_limited_item_with_no_released_batch_is_sold_out PASSED [ 38%]
+tests/test_domain.py::test_unlimited_item_needs_no_batch PASSED          [ 40%]
+tests/test_domain.py::test_new_order_waits_for_payment_and_has_a_total PASSED [ 42%]
+tests/test_domain.py::test_combo_gets_a_gift_while_gifts_last PASSED     [ 44%]
+tests/test_domain.py::test_combo_still_sells_when_gifts_run_out PASSED   [ 46%]
+tests/test_domain.py::test_gifts_are_given_one_per_combo_unit PASSED     [ 48%]
+tests/test_domain.py::test_cancel_gives_units_and_gift_back PASSED       [ 51%]
+tests/test_domain.py::test_cancelling_twice_gives_nothing_back_the_second_time PASSED [ 53%]
+tests/test_domain.py::test_only_pending_orders_can_be_cancelled PASSED   [ 55%]
+tests/test_domain.py::test_combo_availability_is_its_scarcest_component PASSED [ 57%]
+tests/test_domain.py::test_unlimited_item_has_no_availability_number PASSED [ 59%]
+tests/test_domain.py::test_new_batch_for_limited_single_item PASSED      [ 61%]
+tests/test_domain.py::test_new_batch_refused_for_a_combo PASSED          [ 63%]
+tests/test_domain.py::test_new_batch_refused_for_an_unlimited_item PASSED [ 65%]
+tests/test_service.py::test_order_takes_units_and_a_gift PASSED          [ 68%]
+tests/test_service.py::test_same_key_same_body_replays_one_order PASSED  [ 70%]
+tests/test_service.py::test_same_key_different_body_is_refused PASSED    [ 72%]
+tests/test_service.py::test_customer_cannot_read_another_customers_order PASSED [ 74%]
+tests/test_service.py::test_customer_cannot_cancel_another_customers_order PASSED [ 76%]
+tests/test_service.py::test_cancel_returns_units_to_their_batches_and_the_gift PASSED [ 78%]
+tests/test_service.py::test_sold_out_order_changes_nothing PASSED        [ 80%]
+tests/test_service_memory.py::test_order_takes_units_and_a_gift PASSED   [ 82%]
+tests/test_service_memory.py::test_same_key_same_body_replays_one_order PASSED [ 85%]
+tests/test_service_memory.py::test_same_key_different_body_is_refused PASSED [ 87%]
+tests/test_service_memory.py::test_same_key_from_another_customer_is_a_new_order PASSED [ 89%]
+tests/test_service_memory.py::test_customer_cannot_read_another_customers_order PASSED [ 91%]
+tests/test_service_memory.py::test_customer_cannot_cancel_another_customers_order PASSED [ 93%]
+tests/test_service_memory.py::test_cancel_returns_units_and_the_gift PASSED [ 95%]
+tests/test_service_memory.py::test_sold_out_order_changes_nothing PASSED [ 97%]
+tests/test_service_memory.py::test_failed_transaction_leaves_no_trace PASSED [100%]
 
 ============================== warnings summary ===============================
 .venv\Lib\site-packages\fastapi\testclient.py:1
@@ -49,4 +61,4 @@ tests/test_service.py::test_sold_out_order_changes_nothing PASSED        [100%]
     from starlette.testclient import TestClient as TestClient  # noqa
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-======================== 36 passed, 1 warning in 2.83s ========================
+======================== 47 passed, 1 warning in 2.86s ========================
